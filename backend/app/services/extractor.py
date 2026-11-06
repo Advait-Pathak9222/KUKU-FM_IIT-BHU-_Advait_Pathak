@@ -88,11 +88,26 @@ def check_missing_variables(domain: str, facts: Dict[str, Any]) -> List[str]:
             missing.append(field)
     return missing
 
+LANG_NAMES = {
+    "mr-IN": "Marathi (मराठी)",
+    "hi-IN": "Hindi (हिंदी)",
+    "bn-IN": "Bengali (বাংলা)",
+    "ta-IN": "Tamil (தமிழ்)",
+    "te-IN": "Telugu (తెలుగు)",
+    "kn-IN": "Kannada (ಕನ್ನಡ)",
+    "gu-IN": "Gujarati (ગુજરાતી)",
+    "ml-IN": "Malayalam (മലയാളം)",
+    "pa-IN": "Punjabi (ਪੰਜਾਬੀ)",
+    "od-IN": "Odia (ଓଡ଼ିଆ)",
+    "en-IN": "English"
+}
+
 def generate_clarification_response(
     domain: str,
     missing_fields: List[str],
     user_message: str,
-    facts: Dict[str, Any]
+    facts: Dict[str, Any],
+    language_code: Optional[str] = None
 ) -> str:
     kb = get_kb(domain)
     client = get_sarvam_client()
@@ -101,30 +116,40 @@ def generate_clarification_response(
     primary_missing = missing_fields[:2]
     field_prompts = [kb["required_entities"][f]["clarification_prompt"] for f in primary_missing if f in kb["required_entities"]]
     
+    # Identify target language
+    target_lang = LANG_NAMES.get(language_code, "the user's exact regional language")
+    
     if not client:
         return "Aapka mudda samajh aa gaya. Aage badhne ke liye kripya yeh batayein:\n" + "\n".join(f"- {p}" for p in field_prompts)
 
-    system_prompt = f"""You are a helpful, empathetic legal assistant in India helping an ordinary person with their {kb['domain_name']}.
-The user just said: "{user_message}"
+    system_prompt = f"""You are a helpful, empathetic legal assistant in India helping an ordinary citizen with their {kb['domain_name']}.
+The user just communicated in: {target_lang}
+User's message: "{user_message}"
 Currently extracted facts: {json.dumps(facts, ensure_ascii=False)}
 
 We still need to know:
 {", ".join(primary_missing)}
 
+CRITICAL LANGUAGE REQUIREMENT:
+You MUST respond entirely in {target_lang}.
+If the user spoke in Marathi (मराठी), your response MUST be in natural, clear Marathi (मराठी).
+If the user spoke in Tamil, Telugu, Bengali, Gujarati, Kannada, or Hindi, respond in that EXACT regional language.
+Do NOT default to English unless the user spoke in English.
+
 Instruction:
-1. First acknowledge their situation empathetically in 1 short sentence, matching the language/style they used (Hindi, Hinglish, or English).
-2. If they asked to arrest someone under IPC 420 for unpaid salary or civil rent issue, gently clarify that this is a civil/labour matter first.
-3. Then ask for the missing details clearly: {'; '.join(field_prompts)}.
-Keep your answer concise (under 3-4 sentences). Do NOT invent legal notice text yet."""
+1. First acknowledge their situation empathetically in 1 short sentence in {target_lang}.
+2. If they asked to arrest someone under IPC 420 for unpaid salary or civil rent issue, gently clarify in {target_lang} that this is a civil/labour matter first.
+3. Then ask for the missing details clearly in {target_lang}: {'; '.join(field_prompts)}.
+Keep your answer concise (under 2-3 sentences). Do NOT invent legal notice text yet."""
 
     try:
         response = client.chat.completions(
             model="sarvam-105b-conversations",
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": "Generate the clarification response."}
+                {"role": "user", "content": "Generate the clarification response in the target language."}
             ],
-            temperature=0.3
+            temperature=0.2
         )
         return response.choices[0].message.content.strip()
     except Exception:

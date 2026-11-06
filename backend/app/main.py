@@ -84,7 +84,12 @@ def get_notice_pdf(session_id: str):
     )
 
 
-def process_chat_turn(session_id: str, user_msg: str, audio_url: Optional[str] = None) -> Dict[str, Any]:
+def process_chat_turn(
+    session_id: str,
+    user_msg: str,
+    audio_url: Optional[str] = None,
+    language_code: Optional[str] = None
+) -> Dict[str, Any]:
     """
     Core state machine loop for a single conversation turn:
     1. Persists user message in SQLite.
@@ -167,12 +172,13 @@ def process_chat_turn(session_id: str, user_msg: str, audio_url: Optional[str] =
             f"Aap ise verify karke samne wali party ko Speed Post, WhatsApp, ya Email ke zariye bhej sakte hain."
         )
     else:
-        # Generate targeted conversational clarification
+        # Generate targeted conversational clarification in user's detected regional language
         reply_msg = generate_clarification_response(
             domain=current_domain,
             missing_fields=missing_vars,
             user_message=user_msg,
-            facts=updated_facts
+            facts=updated_facts,
+            language_code=language_code
         )
 
     # 5. Commit state updates back to SQLite
@@ -204,7 +210,15 @@ def handle_chat(session_id: str, request: ChatRequest):
     if not user_msg:
         raise HTTPException(status_code=400, detail="Message cannot be empty.")
     
-    result = process_chat_turn(session_id=session_id, user_msg=user_msg, audio_url=request.audio_url)
+    # Auto-detect language for text if not specified
+    lang = request.language_code
+    if not lang:
+        if any(w in user_msg for w in ["आहे", "नाही", "माझं", "माझे", "आम्ही", "करा", "करावे", "मिळत", "रुपये", "घरमालक"]):
+            lang = "mr-IN"
+        elif any(w in user_msg for w in ["hai", "nahi", "raha", "diya", "karo", "makaan", "kiraya", "bhaiya"]):
+            lang = "hi-IN"
+
+    result = process_chat_turn(session_id=session_id, user_msg=user_msg, audio_url=request.audio_url, language_code=lang)
     return ChatResponse(**result)
 
 @app.post("/audio-chat/{session_id}", response_model=AudioChatResponse)
@@ -213,7 +227,7 @@ async def handle_audio_chat(session_id: str, file: UploadFile = File(...)):
     Multimodal Voice Endpoint:
     1. Ingests user audio recording.
     2. Transcribes & detects dialect via Sarvam Saaras STT.
-    3. Runs extraction & dialogue loop.
+    3. Runs extraction & dialogue loop in detected dialect.
     4. Generates spoken audio reply via Sarvam Bulbul TTS.
     5. Returns structured JSON + base64 audio.
     """
@@ -227,11 +241,12 @@ async def handle_audio_chat(session_id: str, file: UploadFile = File(...)):
     if not user_transcription:
         raise HTTPException(status_code=422, detail="Failed to transcribe audio. Please speak clearly or use text input.")
 
-    # 2. Process turn through core extraction loop
+    # 2. Process turn through core extraction loop in user's spoken language
     turn_result = process_chat_turn(
         session_id=session_id,
         user_msg=user_transcription,
-        audio_url=f"audio_input_{session_id}_{file.filename}"
+        audio_url=f"audio_input_{session_id}_{file.filename}",
+        language_code=detected_language
     )
 
     # 3. Generate voice reply via Sarvam Bulbul TTS

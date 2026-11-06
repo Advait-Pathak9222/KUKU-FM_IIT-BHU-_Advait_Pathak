@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 class ChatRequest(BaseModel):
     message: str = Field(..., description="User message text or transcribed speech")
     audio_url: Optional[str] = Field(None, description="Optional audio file URL or reference")
+    language_code: Optional[str] = Field(None, description="Optional ISO language code, e.g. 'mr-IN', 'hi-IN'")
 
 class ChatResponse(BaseModel):
     session_id: str
