@@ -1,0 +1,22 @@
+# Secrets & Environment
+.env
+.env.*
+
+# Local Database
+*.db
+ai_lawyer.db
+
+# Confidential Assignment Pack (per Kuku confidentiality guidelines)
+I Married a Broken Soldier. He was a Duke/
+Kuku — AI Generalist Assignment.pdf
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+.DS_Store
+
+# Virtual environments
+venv/
+.venv/
+env/

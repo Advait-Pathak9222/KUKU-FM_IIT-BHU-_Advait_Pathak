@@ -1,0 +1,97 @@
+{
+  "test_case_metadata": {
+    "id": "TC_01_RENTAL_VAGUE_HINDI",
+    "name": "Rental Deposit - Vague Story (Missing Variables)",
+    "category": "rental_deposit",
+    "input_type": "text",
+    "language": "Hindi",
+    "user_message": "Bhaiya mera landlord deposit wapas nahi de raha hai. Bol raha hai paisa nahi hai agle mahine aana, aur ab phone bhi nahi utha raha. Main kya karun?",
+    "expected_triage": "rental_deposit",
+    "expected_is_complete": false,
+    "intent": "Tests missing variable detection. The agent must acknowledge empathetically, explain that rent recovery is civil, and ask for landlord name and withheld amount."
+  },
+  "conversation_history": [
+    {
+      "turn": 1,
+      "role": "user",
+      "content": "Bhaiya mera landlord deposit wapas nahi de raha hai. Bol raha hai paisa nahi hai agle mahine aana, aur ab phone bhi nahi utha raha. Main kya karun?"
+    },
+    {
+      "turn": 1,
+      "role": "assistant",
+      "content": "Samajh sakta hoon bhaiya, deposit wapas na milna sach mein bahut pareshani ki baat hai. \n\nKripya batayein, aapka poora naam kya hai jo rent agreement ya payment receipt par darj hai, aur aapke landlord ka poora naam kya hai? \n\n(Waise, yeh ek civil matter hai, isliye seedhe IPC 420 ke tehat FIR ya arrest karwana pehle sahi tareeka nahi hai.)",
+      "state_snapshot": {
+        "session_id": "eval_tc_01_rental_vague_hindi",
+        "domain": "rental_deposit",
+        "reply": "Samajh sakta hoon bhaiya, deposit wapas na milna sach mein bahut pareshani ki baat hai. \n\nKripya batayein, aapka poora naam kya hai jo rent agreement ya payment receipt par darj hai, aur aapke landlord ka poora naam kya hai? \n\n(Waise, yeh ek civil matter hai, isliye seedhe IPC 420 ke tehat FIR ya arrest karwana pehle sahi tareeka nahi hai.)",
+        "is_complete": false,
+        "escalation_triggered": false,
+        "escalation_reason": null,
+        "missing_variables": [
+          "tenant_name",
+          "landlord_name",
+          "property_address",
+          "deposit_amount_paid",
+          "amount_withheld",
+          "vacating_date",
+          "landlord_deduction_reason",
+          "proof_status"
+        ],
+        "facts": {},
+        "legal_notice_draft": null
+      }
+    },
+    {
+      "turn": 2,
+      "role": "user",
+      "content": "Mera poora naam Advait Pathak hai."
+    },
+    {
+      "turn": 2,
+      "role": "assistant",
+      "content": "Samajh sakta hoon ki aap apne security deposit ko lekar kaafi pareshan honge, Advait Pathak ji. \n\nKiraye ke deposit ka maamla civil nature ka hota hai, isliye pehle civil ya rent agreement ke hisaab se hi aage badhna sahi rahega. \n\nKripya makaan-maalik (landlord) ka poora naam bata dein, aur yeh bhi batayein ki kiraye ka makaan ya flat kis sheher aur locality mein sthit tha?",
+      "state_snapshot": {
+        "session_id": "eval_tc_01_rental_vague_hindi",
+        "domain": "rental_deposit",
+        "reply": "Samajh sakta hoon ki aap apne security deposit ko lekar kaafi pareshan honge, Advait Pathak ji. \n\nKiraye ke deposit ka maamla civil nature ka hota hai, isliye pehle civil ya rent agreement ke hisaab se hi aage badhna sahi rahega. \n\nKripya makaan-maalik (landlord) ka poora naam bata dein, aur yeh bhi batayein ki kiraye ka makaan ya flat kis sheher aur locality mein sthit tha?",
+        "is_complete": false,
+        "escalation_triggered": false,
+        "escalation_reason": null,
+        "missing_variables": [
+          "landlord_name",
+          "property_address",
+          "deposit_amount_paid",
+          "amount_withheld",
+          "vacating_date",
+          "landlord_deduction_reason",
+          "proof_status"
+        ],
+        "facts": {
+          "tenant_name": "Advait Pathak"
+        },
+        "legal_notice_draft": null
+      }
+    }
+  ],
+  "final_case_state": {
+    "session_id": "eval_tc_01_rental_vague_hindi",
+    "domain": "rental_deposit",
+    "reply": "Samajh sakta hoon ki aap apne security deposit ko lekar kaafi pareshan honge, Advait Pathak ji. \n\nKiraye ke deposit ka maamla civil nature ka hota hai, isliye pehle civil ya rent agreement ke hisaab se hi aage badhna sahi rahega. \n\nKripya makaan-maalik (landlord) ka poora naam bata dein, aur yeh bhi batayein ki kiraye ka makaan ya flat kis sheher aur locality mein sthit tha?",
+    "is_complete": false,
+    "escalation_triggered": false,
+    "escalation_reason": null,
+    "missing_variables": [
+      "landlord_name",
+      "property_address",
+      "deposit_amount_paid",
+      "amount_withheld",
+      "vacating_date",
+      "landlord_deduction_reason",
+      "proof_status"
+    ],
+    "facts": {
+      "tenant_name": "Advait Pathak"
+    },
+    "legal_notice_draft": null
+  }
+}

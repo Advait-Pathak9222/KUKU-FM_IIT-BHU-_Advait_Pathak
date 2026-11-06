@@ -1,0 +1,96 @@
+{
+  "test_case_metadata": {
+    "id": "TC_02_RENTAL_HINGLISH_DETAILED",
+    "name": "Rental Deposit - Dense Hinglish (Bangalore 2BHK)",
+    "category": "rental_deposit",
+    "input_type": "text",
+    "language": "Hinglish",
+    "user_message": "Hi sir, maine pichle mahine 15 October ko Indiranagar Bangalore wala 2BHK flat khali kiya tha. Makaan-maalik ka naam Ramesh Kumar hai. Maine 80,000 security deposit diya tha through Google Pay. Ab vo bol raha hai ki pure flat ki painting aur deep cleaning ka 35,000 katega, jabki agreement me likha tha normal wear and tear landlord bear karega. Key handover receipt aur WhatsApp chat mere paas hai. Mujhe mera poora 35,000 refund chahiye.",
+    "expected_triage": "rental_deposit",
+    "expected_is_complete": false,
+    "intent": "Tests entity extraction from noisy Hinglish. Extracts 7 variables; identifies that only tenant legal name is missing before drafting."
+  },
+  "conversation_history": [
+    {
+      "turn": 1,
+      "role": "user",
+      "content": "Hi sir, maine pichle mahine 15 October ko Indiranagar Bangalore wala 2BHK flat khali kiya tha. Makaan-maalik ka naam Ramesh Kumar hai. Maine 80,000 security deposit diya tha through Google Pay. Ab vo bol raha hai ki pure flat ki painting aur deep cleaning ka 35,000 katega, jabki agreement me likha tha normal wear and tear landlord bear karega. Key handover receipt aur WhatsApp chat mere paas hai. Mujhe mera poora 35,000 refund chahiye."
+    },
+    {
+      "turn": 1,
+      "role": "assistant",
+      "content": "I understand how stressful it must be to fight for your hard-earned money against your landlord. \n\nSince this is a civil property dispute, filing an FIR under IPC 420 won't be the right first step here. \n\nAapka poora naam kya hai jo rent agreement ya payment receipt par darj hai?",
+      "state_snapshot": {
+        "session_id": "eval_tc_02_rental_hinglish_detailed",
+        "domain": "rental_deposit",
+        "reply": "I understand how stressful it must be to fight for your hard-earned money against your landlord. \n\nSince this is a civil property dispute, filing an FIR under IPC 420 won't be the right first step here. \n\nAapka poora naam kya hai jo rent agreement ya payment receipt par darj hai?",
+        "is_complete": false,
+        "escalation_triggered": false,
+        "escalation_reason": null,
+        "missing_variables": [
+          "tenant_name"
+        ],
+        "facts": {
+          "landlord_name": "Ramesh Kumar",
+          "property_address": "Indiranagar, Bangalore",
+          "deposit_amount_paid": 80000,
+          "amount_withheld": 35000,
+          "vacating_date": "15 October",
+          "landlord_deduction_reason": "painting and deep cleaning",
+          "proof_status": "whatsapp_chats"
+        },
+        "legal_notice_draft": null
+      }
+    },
+    {
+      "turn": 2,
+      "role": "user",
+      "content": "Mera poora naam Advait Pathak hai."
+    },
+    {
+      "turn": 2,
+      "role": "assistant",
+      "content": "✅ **Aapke sabhi zaroori facts verify ho chuke hain.**\n\n**Aapki Kanooni Sthiti (Legal Standing):**\nBhartiya kanoon aur tenancy niyamon ke mutabiq:\n1. Security deposit aapki amaanat hoti hai jo makaan-maalik ke paas sirf genuine damages ya pending bills ke liye rakhi jaati hai.\n2. Normal wear and tear (jaise samanya deewar ka paint purana hona, regular istemaal) ka kharcha landlord bina written agreement ke aapke deposit se nahi kaat sakta.\n3. Chaabi saupne aur flat khali karne ke baad, makaan-maalik ko 15 se 30 din me hisaab karke bacha hua deposit lautaana anivarya hai.\n4. Bina kisi pakke bill ya estimation ke manmaane paise kaatna kanooni taur par anuchit hai.\n\nMaine aapke liye ek Formal Legal Notice of Demand draft kar diya hai. Aap ise verify karke samne wali party ko Speed Post, WhatsApp, ya Email ke zariye bhej sakte hain.",
+      "state_snapshot": {
+        "session_id": "eval_tc_02_rental_hinglish_detailed",
+        "domain": "rental_deposit",
+        "reply": "✅ **Aapke sabhi zaroori facts verify ho chuke hain.**\n\n**Aapki Kanooni Sthiti (Legal Standing):**\nBhartiya kanoon aur tenancy niyamon ke mutabiq:\n1. Security deposit aapki amaanat hoti hai jo makaan-maalik ke paas sirf genuine damages ya pending bills ke liye rakhi jaati hai.\n2. Normal wear and tear (jaise samanya deewar ka paint purana hona, regular istemaal) ka kharcha landlord bina written agreement ke aapke deposit se nahi kaat sakta.\n3. Chaabi saupne aur flat khali karne ke baad, makaan-maalik ko 15 se 30 din me hisaab karke bacha hua deposit lautaana anivarya hai.\n4. Bina kisi pakke bill ya estimation ke manmaane paise kaatna kanooni taur par anuchit hai.\n\nMaine aapke liye ek Formal Legal Notice of Demand draft kar diya hai. Aap ise verify karke samne wali party ko Speed Post, WhatsApp, ya Email ke zariye bhej sakte hain.",
+        "is_complete": true,
+        "escalation_triggered": false,
+        "escalation_reason": null,
+        "missing_variables": [],
+        "facts": {
+          "landlord_name": "Ramesh Kumar",
+          "property_address": "Indiranagar, Bangalore",
+          "deposit_amount_paid": 80000,
+          "amount_withheld": 35000,
+          "vacating_date": "15 October",
+          "landlord_deduction_reason": "painting and deep cleaning",
+          "proof_status": "whatsapp_chats",
+          "tenant_name": "Advait Pathak"
+        },
+        "legal_notice_draft": "**FORMAL LEGAL NOTICE OF DEMAND**\n*(Sent via Speed Post / Registered Email / WhatsApp)*\n\n**Date:** 06 November, 2026\n\n**To:**\n**Ramesh Kumar**\nAddress: Indiranagar, Bangalore\n\n**From (Sender):**\n**Advait Pathak**\nFormer Tenant of: Indiranagar, Bangalore\n\n---\n\n**SUBJECT: FORMAL NOTICE FOR IMMEDIATE REFUND OF WITHHELD SECURITY DEPOSIT AMOUNTING TO RS. 35000/- ALONG WITH INTEREST**\n\nSir/Madam,\n\nUnder instructions and on behalf of myself, **Advait Pathak**, I hereby serve upon you this Formal Notice of Demand regarding the illegal retention of my security deposit:\n\n1. **TENANCY & SECURITY DEPOSIT:** That I was a lawful tenant at **Indiranagar, Bangalore**. At the inception of the tenancy, a total refundable security deposit of **Rs. 80000/-** was remitted to you via whatsapp_chats.\n\n2. **VACATION & HANDOVER:** That I lawfully vacated the tenancy premises and handed over peaceful, vacant possession along with keys on **15 October**. The premises were handed over in good order, reasonable wear and tear excepted.\n\n3. **UNLAWFUL WITHHOLDING:** That despite repeated verbal and written requests, you have failed and neglected to refund the balance sum of **Rs. 35000/-**, citing \"painting and deep cleaning\", without providing any verified inspection report, legitimate contractor invoices, or legal basis for such deduction.\n\n4. **LEGAL LIABILITY:** That the security deposit is held by the landlord in a fiduciary capacity and cannot be appropriated for routine maintenance or normal wear and tear. Your failure to return the money constitutes a willful breach of contract under Section 73 of the Indian Contract Act, 1872, and unjust enrichment.\n\n5. **DEMAND (15 DAYS NOTICE):** You are hereby called upon to refund the full withheld sum of **Rs. 35000/-** directly into my bank account within **fifteen (15) days** of receipt of this notice.\n\n6. **CONSEQUENCE OF NON-COMPLIANCE:** Take notice that in default of compliance within the stipulated 15 days, I shall be constrained to institute appropriate civil proceedings against you, including a Summary Suit for Recovery under Order 37 of the CPC with 18% per annum penal interest, and approach the competent Rent Authority, holding you fully liable for all associated costs and consequences.\n\n**Sender:**\n**Advait Pathak**"
+      }
+    }
+  ],
+  "final_case_state": {
+    "session_id": "eval_tc_02_rental_hinglish_detailed",
+    "domain": "rental_deposit",
+    "reply": "✅ **Aapke sabhi zaroori facts verify ho chuke hain.**\n\n**Aapki Kanooni Sthiti (Legal Standing):**\nBhartiya kanoon aur tenancy niyamon ke mutabiq:\n1. Security deposit aapki amaanat hoti hai jo makaan-maalik ke paas sirf genuine damages ya pending bills ke liye rakhi jaati hai.\n2. Normal wear and tear (jaise samanya deewar ka paint purana hona, regular istemaal) ka kharcha landlord bina written agreement ke aapke deposit se nahi kaat sakta.\n3. Chaabi saupne aur flat khali karne ke baad, makaan-maalik ko 15 se 30 din me hisaab karke bacha hua deposit lautaana anivarya hai.\n4. Bina kisi pakke bill ya estimation ke manmaane paise kaatna kanooni taur par anuchit hai.\n\nMaine aapke liye ek Formal Legal Notice of Demand draft kar diya hai. Aap ise verify karke samne wali party ko Speed Post, WhatsApp, ya Email ke zariye bhej sakte hain.",
+    "is_complete": true,
+    "escalation_triggered": false,
+    "escalation_reason": null,
+    "missing_variables": [],
+    "facts": {
+      "landlord_name": "Ramesh Kumar",
+      "property_address": "Indiranagar, Bangalore",
+      "deposit_amount_paid": 80000,
+      "amount_withheld": 35000,
+      "vacating_date": "15 October",
+      "landlord_deduction_reason": "painting and deep cleaning",
+      "proof_status": "whatsapp_chats",
+      "tenant_name": "Advait Pathak"
+    },
+    "legal_notice_draft": "**FORMAL LEGAL NOTICE OF DEMAND**\n*(Sent via Speed Post / Registered Email / WhatsApp)*\n\n**Date:** 06 November, 2026\n\n**To:**\n**Ramesh Kumar**\nAddress: Indiranagar, Bangalore\n\n**From (Sender):**\n**Advait Pathak**\nFormer Tenant of: Indiranagar, Bangalore\n\n---\n\n**SUBJECT: FORMAL NOTICE FOR IMMEDIATE REFUND OF WITHHELD SECURITY DEPOSIT AMOUNTING TO RS. 35000/- ALONG WITH INTEREST**\n\nSir/Madam,\n\nUnder instructions and on behalf of myself, **Advait Pathak**, I hereby serve upon you this Formal Notice of Demand regarding the illegal retention of my security deposit:\n\n1. **TENANCY & SECURITY DEPOSIT:** That I was a lawful tenant at **Indiranagar, Bangalore**. At the inception of the tenancy, a total refundable security deposit of **Rs. 80000/-** was remitted to you via whatsapp_chats.\n\n2. **VACATION & HANDOVER:** That I lawfully vacated the tenancy premises and handed over peaceful, vacant possession along with keys on **15 October**. The premises were handed over in good order, reasonable wear and tear excepted.\n\n3. **UNLAWFUL WITHHOLDING:** That despite repeated verbal and written requests, you have failed and neglected to refund the balance sum of **Rs. 35000/-**, citing \"painting and deep cleaning\", without providing any verified inspection report, legitimate contractor invoices, or legal basis for such deduction.\n\n4. **LEGAL LIABILITY:** That the security deposit is held by the landlord in a fiduciary capacity and cannot be appropriated for routine maintenance or normal wear and tear. Your failure to return the money constitutes a willful breach of contract under Section 73 of the Indian Contract Act, 1872, and unjust enrichment.\n\n5. **DEMAND (15 DAYS NOTICE):** You are hereby called upon to refund the full withheld sum of **Rs. 35000/-** directly into my bank account within **fifteen (15) days** of receipt of this notice.\n\n6. **CONSEQUENCE OF NON-COMPLIANCE:** Take notice that in default of compliance within the stipulated 15 days, I shall be constrained to institute appropriate civil proceedings against you, including a Summary Suit for Recovery under Order 37 of the CPC with 18% per annum penal interest, and approach the competent Rent Authority, holding you fully liable for all associated costs and consequences.\n\n**Sender:**\n**Advait Pathak**"
+  }
+}

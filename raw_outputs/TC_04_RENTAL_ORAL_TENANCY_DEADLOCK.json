@@ -1,0 +1,67 @@
+{
+  "test_case_metadata": {
+    "id": "TC_04_RENTAL_ORAL_TENANCY_DEADLOCK",
+    "name": "Rental Deposit - Oral Agreement & Cash Payment (Evidentiary Risk)",
+    "category": "rental_deposit",
+    "input_type": "text",
+    "language": "Hindi/Hinglish",
+    "user_message": "Mera naam Imran Khan hai. Maine Laxmi Nagar Delhi me flat liya tha. Landlord Satish Sharma ne 20,000 deposit cash liya tha aur koi agreement nahi banaya tha. 1 November ko khali kiya tha. Ab bolta hai mere paas koi proof nahi hai toh paisa nahi dega. Kya notice bhej sakte hain?",
+    "expected_triage": "rental_deposit",
+    "expected_is_complete": true,
+    "intent": "Tests the 'Missing Proof Deadlock' edge case. Instead of looping infinitely for agreement documents, classifies proof as oral/informal, warns the user about evidentiary hurdles, but drafts a valid demand notice."
+  },
+  "conversation_history": [
+    {
+      "turn": 1,
+      "role": "user",
+      "content": "Mera naam Imran Khan hai. Maine Laxmi Nagar Delhi me flat liya tha. Landlord Satish Sharma ne 20,000 deposit cash liya tha aur koi agreement nahi banaya tha. 1 November ko khali kiya tha. Ab bolta hai mere paas koi proof nahi hai toh paisa nahi dega. Kya notice bhej sakte hain?"
+    },
+    {
+      "turn": 1,
+      "role": "assistant",
+      "content": "Imran ji, aapki pareshani samajh sakti hoon, yeh sach mein bahut stressful situation hai. \n\nChunki yeh ek civil rent dispute hai, isliye kisi ko arrest karne ke liye IPC 420 (dhokhadhadi) ka istemal pehle nahi kiya ja sakta; iske liye pehle civil legal route hi follow karna hoga. \n\nAb mujhe yeh do baatein bata dijiye: Satish Sharma ne wapas karne se kitne paise rok liye hain ya kaat liye hain?; aur woh paise kaatne ka kya kaaran bata raha hai (jaise painting, safaai, ya bina kisi kaaran)?",
+      "state_snapshot": {
+        "session_id": "eval_tc_04_rental_oral_tenancy_deadlock",
+        "domain": "rental_deposit",
+        "reply": "Imran ji, aapki pareshani samajh sakti hoon, yeh sach mein bahut stressful situation hai. \n\nChunki yeh ek civil rent dispute hai, isliye kisi ko arrest karne ke liye IPC 420 (dhokhadhadi) ka istemal pehle nahi kiya ja sakta; iske liye pehle civil legal route hi follow karna hoga. \n\nAb mujhe yeh do baatein bata dijiye: Satish Sharma ne wapas karne se kitne paise rok liye hain ya kaat liye hain?; aur woh paise kaatne ka kya kaaran bata raha hai (jaise painting, safaai, ya bina kisi kaaran)?",
+        "is_complete": false,
+        "escalation_triggered": false,
+        "escalation_reason": null,
+        "missing_variables": [
+          "amount_withheld",
+          "landlord_deduction_reason"
+        ],
+        "facts": {
+          "tenant_name": "Imran Khan",
+          "landlord_name": "Satish Sharma",
+          "property_address": "Laxmi Nagar, Delhi",
+          "deposit_amount_paid": 20000,
+          "vacating_date": "1 November",
+          "proof_status": "oral_agreement_only"
+        },
+        "legal_notice_draft": null
+      }
+    }
+  ],
+  "final_case_state": {
+    "session_id": "eval_tc_04_rental_oral_tenancy_deadlock",
+    "domain": "rental_deposit",
+    "reply": "Imran ji, aapki pareshani samajh sakti hoon, yeh sach mein bahut stressful situation hai. \n\nChunki yeh ek civil rent dispute hai, isliye kisi ko arrest karne ke liye IPC 420 (dhokhadhadi) ka istemal pehle nahi kiya ja sakta; iske liye pehle civil legal route hi follow karna hoga. \n\nAb mujhe yeh do baatein bata dijiye: Satish Sharma ne wapas karne se kitne paise rok liye hain ya kaat liye hain?; aur woh paise kaatne ka kya kaaran bata raha hai (jaise painting, safaai, ya bina kisi kaaran)?",
+    "is_complete": false,
+    "escalation_triggered": false,
+    "escalation_reason": null,
+    "missing_variables": [
+      "amount_withheld",
+      "landlord_deduction_reason"
+    ],
+    "facts": {
+      "tenant_name": "Imran Khan",
+      "landlord_name": "Satish Sharma",
+      "property_address": "Laxmi Nagar, Delhi",
+      "deposit_amount_paid": 20000,
+      "vacating_date": "1 November",
+      "proof_status": "oral_agreement_only"
+    },
+    "legal_notice_draft": null
+  }
+}

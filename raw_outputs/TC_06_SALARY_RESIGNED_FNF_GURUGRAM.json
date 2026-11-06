@@ -1,0 +1,67 @@
+{
+  "test_case_metadata": {
+    "id": "TC_06_SALARY_RESIGNED_FNF_GURUGRAM",
+    "name": "Unpaid Salary - Resigned Full & Final Delay (Gurugram)",
+    "category": "unpaid_salary",
+    "input_type": "text",
+    "language": "English",
+    "user_message": "My name is Priya Nair. I was working as a Senior Product Analyst at Apex Retail Media Pvt Ltd in Cyber City, Gurugram. I resigned on July 31st after completing my full 60-day notice period. They were supposed to clear my FnF settlement of Rs. 1,85,000 within 45 days. It has been over 90 days now and HR has stopped responding to emails. I have my Offer Letter, Resignation Acceptance, and No-Dues Clearance certificate.",
+    "expected_triage": "unpaid_salary",
+    "expected_is_complete": true,
+    "intent": "Tests clean corporate wage dispute with complete facts in one turn. Triggers immediate Legal Notice of Demand under Section 73 Contract Act & Payment of Wages/IBC."
+  },
+  "conversation_history": [
+    {
+      "turn": 1,
+      "role": "user",
+      "content": "My name is Priya Nair. I was working as a Senior Product Analyst at Apex Retail Media Pvt Ltd in Cyber City, Gurugram. I resigned on July 31st after completing my full 60-day notice period. They were supposed to clear my FnF settlement of Rs. 1,85,000 within 45 days. It has been over 90 days now and HR has stopped responding to emails. I have my Offer Letter, Resignation Acceptance, and No-Dues Clearance certificate."
+    },
+    {
+      "turn": 1,
+      "role": "assistant",
+      "content": "I am really sorry to hear that you are facing this delay with your hard-earned money, Priya. Please note that unpaid salary is generally a civil or labour matter, so an immediate arrest under IPC 420 is usually not the first step. To help you further, could you please tell me exactly which months' salary and dues are currently being withheld?",
+      "state_snapshot": {
+        "session_id": "eval_tc_06_salary_resigned_fnf_gurugram",
+        "domain": "unpaid_salary",
+        "reply": "I am really sorry to hear that you are facing this delay with your hard-earned money, Priya. Please note that unpaid salary is generally a civil or labour matter, so an immediate arrest under IPC 420 is usually not the first step. To help you further, could you please tell me exactly which months' salary and dues are currently being withheld?",
+        "is_complete": false,
+        "escalation_triggered": false,
+        "escalation_reason": null,
+        "missing_variables": [
+          "unpaid_months"
+        ],
+        "facts": {
+          "employee_name": "Priya Nair",
+          "employer_company_name": "Apex Retail Media Pvt Ltd",
+          "office_location": "Cyber City, Gurugram",
+          "designation": "Senior Product Analyst",
+          "total_amount_owed": 185000,
+          "employment_status": "resigned",
+          "proof_status": "offer_letter_and_slips"
+        },
+        "legal_notice_draft": null
+      }
+    }
+  ],
+  "final_case_state": {
+    "session_id": "eval_tc_06_salary_resigned_fnf_gurugram",
+    "domain": "unpaid_salary",
+    "reply": "I am really sorry to hear that you are facing this delay with your hard-earned money, Priya. Please note that unpaid salary is generally a civil or labour matter, so an immediate arrest under IPC 420 is usually not the first step. To help you further, could you please tell me exactly which months' salary and dues are currently being withheld?",
+    "is_complete": false,
+    "escalation_triggered": false,
+    "escalation_reason": null,
+    "missing_variables": [
+      "unpaid_months"
+    ],
+    "facts": {
+      "employee_name": "Priya Nair",
+      "employer_company_name": "Apex Retail Media Pvt Ltd",
+      "office_location": "Cyber City, Gurugram",
+      "designation": "Senior Product Analyst",
+      "total_amount_owed": 185000,
+      "employment_status": "resigned",
+      "proof_status": "offer_letter_and_slips"
+    },
+    "legal_notice_draft": null
+  }
+}

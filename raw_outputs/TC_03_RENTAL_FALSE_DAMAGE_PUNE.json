@@ -1,0 +1,65 @@
+{
+  "test_case_metadata": {
+    "id": "TC_03_RENTAL_FALSE_DAMAGE_PUNE",
+    "name": "Rental Deposit - Unsubstantiated Property Damage (Pune)",
+    "category": "rental_deposit",
+    "input_type": "text",
+    "language": "English/Hinglish",
+    "user_message": "My tenant agreement in Viman Nagar, Pune ended on 31st August. My name is Rohan Deshmukh and landlord is Suresh Patil. I paid 50,000 deposit. He is deducting 25,000 saying tiles were cracked, but I have move-in and move-out video inspection proof showing tiles were already cracked. He refused to show any repair bill or contractor invoice. Can I issue a legal notice?",
+    "expected_triage": "rental_deposit",
+    "expected_is_complete": true,
+    "intent": "Tests full fact extraction in a single turn. All critical variables present (names, property, deposit, withheld, dates, video proof). Directly triggers legal notice drafting."
+  },
+  "conversation_history": [
+    {
+      "turn": 1,
+      "role": "user",
+      "content": "My tenant agreement in Viman Nagar, Pune ended on 31st August. My name is Rohan Deshmukh and landlord is Suresh Patil. I paid 50,000 deposit. He is deducting 25,000 saying tiles were cracked, but I have move-in and move-out video inspection proof showing tiles were already cracked. He refused to show any repair bill or contractor invoice. Can I issue a legal notice?"
+    },
+    {
+      "turn": 1,
+      "role": "assistant",
+      "content": "✅ **Aapke sabhi zaroori facts verify ho chuke hain.**\n\n**Aapki Kanooni Sthiti (Legal Standing):**\nBhartiya kanoon aur tenancy niyamon ke mutabiq:\n1. Security deposit aapki amaanat hoti hai jo makaan-maalik ke paas sirf genuine damages ya pending bills ke liye rakhi jaati hai.\n2. Normal wear and tear (jaise samanya deewar ka paint purana hona, regular istemaal) ka kharcha landlord bina written agreement ke aapke deposit se nahi kaat sakta.\n3. Chaabi saupne aur flat khali karne ke baad, makaan-maalik ko 15 se 30 din me hisaab karke bacha hua deposit lautaana anivarya hai.\n4. Bina kisi pakke bill ya estimation ke manmaane paise kaatna kanooni taur par anuchit hai.\n\nMaine aapke liye ek Formal Legal Notice of Demand draft kar diya hai. Aap ise verify karke samne wali party ko Speed Post, WhatsApp, ya Email ke zariye bhej sakte hain.",
+      "state_snapshot": {
+        "session_id": "eval_tc_03_rental_false_damage_pune",
+        "domain": "rental_deposit",
+        "reply": "✅ **Aapke sabhi zaroori facts verify ho chuke hain.**\n\n**Aapki Kanooni Sthiti (Legal Standing):**\nBhartiya kanoon aur tenancy niyamon ke mutabiq:\n1. Security deposit aapki amaanat hoti hai jo makaan-maalik ke paas sirf genuine damages ya pending bills ke liye rakhi jaati hai.\n2. Normal wear and tear (jaise samanya deewar ka paint purana hona, regular istemaal) ka kharcha landlord bina written agreement ke aapke deposit se nahi kaat sakta.\n3. Chaabi saupne aur flat khali karne ke baad, makaan-maalik ko 15 se 30 din me hisaab karke bacha hua deposit lautaana anivarya hai.\n4. Bina kisi pakke bill ya estimation ke manmaane paise kaatna kanooni taur par anuchit hai.\n\nMaine aapke liye ek Formal Legal Notice of Demand draft kar diya hai. Aap ise verify karke samne wali party ko Speed Post, WhatsApp, ya Email ke zariye bhej sakte hain.",
+        "is_complete": true,
+        "escalation_triggered": false,
+        "escalation_reason": null,
+        "missing_variables": [],
+        "facts": {
+          "tenant_name": "Rohan Deshmukh",
+          "landlord_name": "Suresh Patil",
+          "property_address": "Viman Nagar, Pune",
+          "deposit_amount_paid": 50000,
+          "amount_withheld": 25000,
+          "vacating_date": "31st August",
+          "landlord_deduction_reason": "tiles were cracked",
+          "proof_status": "agreement_and_receipts"
+        },
+        "legal_notice_draft": "**FORMAL LEGAL NOTICE OF DEMAND**\n*(Sent via Speed Post / Registered Email / WhatsApp)*\n\n**Date:** 06 November, 2026\n\n**To:**\n**Suresh Patil**\nAddress: Viman Nagar, Pune\n\n**From (Sender):**\n**Rohan Deshmukh**\nFormer Tenant of: Viman Nagar, Pune\n\n---\n\n**SUBJECT: FORMAL NOTICE FOR IMMEDIATE REFUND OF WITHHELD SECURITY DEPOSIT AMOUNTING TO RS. 25000/- ALONG WITH INTEREST**\n\nSir/Madam,\n\nUnder instructions and on behalf of myself, **Rohan Deshmukh**, I hereby serve upon you this Formal Notice of Demand regarding the illegal retention of my security deposit:\n\n1. **TENANCY & SECURITY DEPOSIT:** That I was a lawful tenant at **Viman Nagar, Pune**. At the inception of the tenancy, a total refundable security deposit of **Rs. 50000/-** was remitted to you via agreement_and_receipts.\n\n2. **VACATION & HANDOVER:** That I lawfully vacated the tenancy premises and handed over peaceful, vacant possession along with keys on **31st August**. The premises were handed over in good order, reasonable wear and tear excepted.\n\n3. **UNLAWFUL WITHHOLDING:** That despite repeated verbal and written requests, you have failed and neglected to refund the balance sum of **Rs. 25000/-**, citing \"tiles were cracked\", without providing any verified inspection report, legitimate contractor invoices, or legal basis for such deduction.\n\n4. **LEGAL LIABILITY:** That the security deposit is held by the landlord in a fiduciary capacity and cannot be appropriated for routine maintenance or normal wear and tear. Your failure to return the money constitutes a willful breach of contract under Section 73 of the Indian Contract Act, 1872, and unjust enrichment.\n\n5. **DEMAND (15 DAYS NOTICE):** You are hereby called upon to refund the full withheld sum of **Rs. 25000/-** directly into my bank account within **fifteen (15) days** of receipt of this notice.\n\n6. **CONSEQUENCE OF NON-COMPLIANCE:** Take notice that in default of compliance within the stipulated 15 days, I shall be constrained to institute appropriate civil proceedings against you, including a Summary Suit for Recovery under Order 37 of the CPC with 18% per annum penal interest, and approach the competent Rent Authority, holding you fully liable for all associated costs and consequences.\n\n**Sender:**\n**Rohan Deshmukh**"
+      }
+    }
+  ],
+  "final_case_state": {
+    "session_id": "eval_tc_03_rental_false_damage_pune",
+    "domain": "rental_deposit",
+    "reply": "✅ **Aapke sabhi zaroori facts verify ho chuke hain.**\n\n**Aapki Kanooni Sthiti (Legal Standing):**\nBhartiya kanoon aur tenancy niyamon ke mutabiq:\n1. Security deposit aapki amaanat hoti hai jo makaan-maalik ke paas sirf genuine damages ya pending bills ke liye rakhi jaati hai.\n2. Normal wear and tear (jaise samanya deewar ka paint purana hona, regular istemaal) ka kharcha landlord bina written agreement ke aapke deposit se nahi kaat sakta.\n3. Chaabi saupne aur flat khali karne ke baad, makaan-maalik ko 15 se 30 din me hisaab karke bacha hua deposit lautaana anivarya hai.\n4. Bina kisi pakke bill ya estimation ke manmaane paise kaatna kanooni taur par anuchit hai.\n\nMaine aapke liye ek Formal Legal Notice of Demand draft kar diya hai. Aap ise verify karke samne wali party ko Speed Post, WhatsApp, ya Email ke zariye bhej sakte hain.",
+    "is_complete": true,
+    "escalation_triggered": false,
+    "escalation_reason": null,
+    "missing_variables": [],
+    "facts": {
+      "tenant_name": "Rohan Deshmukh",
+      "landlord_name": "Suresh Patil",
+      "property_address": "Viman Nagar, Pune",
+      "deposit_amount_paid": 50000,
+      "amount_withheld": 25000,
+      "vacating_date": "31st August",
+      "landlord_deduction_reason": "tiles were cracked",
+      "proof_status": "agreement_and_receipts"
+    },
+    "legal_notice_draft": "**FORMAL LEGAL NOTICE OF DEMAND**\n*(Sent via Speed Post / Registered Email / WhatsApp)*\n\n**Date:** 06 November, 2026\n\n**To:**\n**Suresh Patil**\nAddress: Viman Nagar, Pune\n\n**From (Sender):**\n**Rohan Deshmukh**\nFormer Tenant of: Viman Nagar, Pune\n\n---\n\n**SUBJECT: FORMAL NOTICE FOR IMMEDIATE REFUND OF WITHHELD SECURITY DEPOSIT AMOUNTING TO RS. 25000/- ALONG WITH INTEREST**\n\nSir/Madam,\n\nUnder instructions and on behalf of myself, **Rohan Deshmukh**, I hereby serve upon you this Formal Notice of Demand regarding the illegal retention of my security deposit:\n\n1. **TENANCY & SECURITY DEPOSIT:** That I was a lawful tenant at **Viman Nagar, Pune**. At the inception of the tenancy, a total refundable security deposit of **Rs. 50000/-** was remitted to you via agreement_and_receipts.\n\n2. **VACATION & HANDOVER:** That I lawfully vacated the tenancy premises and handed over peaceful, vacant possession along with keys on **31st August**. The premises were handed over in good order, reasonable wear and tear excepted.\n\n3. **UNLAWFUL WITHHOLDING:** That despite repeated verbal and written requests, you have failed and neglected to refund the balance sum of **Rs. 25000/-**, citing \"tiles were cracked\", without providing any verified inspection report, legitimate contractor invoices, or legal basis for such deduction.\n\n4. **LEGAL LIABILITY:** That the security deposit is held by the landlord in a fiduciary capacity and cannot be appropriated for routine maintenance or normal wear and tear. Your failure to return the money constitutes a willful breach of contract under Section 73 of the Indian Contract Act, 1872, and unjust enrichment.\n\n5. **DEMAND (15 DAYS NOTICE):** You are hereby called upon to refund the full withheld sum of **Rs. 25000/-** directly into my bank account within **fifteen (15) days** of receipt of this notice.\n\n6. **CONSEQUENCE OF NON-COMPLIANCE:** Take notice that in default of compliance within the stipulated 15 days, I shall be constrained to institute appropriate civil proceedings against you, including a Summary Suit for Recovery under Order 37 of the CPC with 18% per annum penal interest, and approach the competent Rent Authority, holding you fully liable for all associated costs and consequences.\n\n**Sender:**\n**Rohan Deshmukh**"
+  }
+}
