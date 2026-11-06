@@ -252,6 +252,10 @@ input_col1, input_col2 = st.columns([1, 3])
 with input_col1:
     st.markdown("🎙️ **Voice Input (Indic Speech)**")
     audio_val = st.audio_input("Record your voice", key="voice_recorder")
+    with st.expander("📁 Or upload audio file"):
+        uploaded_audio = st.file_uploader("Upload audio (.wav, .mp3)", type=["wav", "mp3", "m4a"], key="file_audio_uploader")
+        if uploaded_audio is not None and audio_val is None:
+            audio_val = uploaded_audio
 
 with input_col2:
     st.markdown("💬 **Text Input (Hindi / Hinglish / English)**")
