@@ -1,8 +1,9 @@
+import os
 from fastapi import FastAPI, HTTPException, UploadFile, File, Response
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, Dict, Any, Tuple
 
-from .config import SARVAM_API_KEY
+from .config import SARVAM_API_KEY, LLM_PROVIDER, LLM_MODEL
 from .database import (
     init_db,
     save_chat_message,
@@ -11,12 +12,13 @@ from .database import (
     upsert_case_state
 )
 from .models import ChatRequest, ChatResponse, AudioChatResponse
-from .services.triage import classify_user_intent
+from .services.triage import classify_user_intent, check_deterministic_escalation
 from .services.extractor import (
     extract_facts,
     check_missing_variables,
     generate_clarification_response,
-    assemble_legal_notice
+    assemble_legal_notice,
+    generate_roleplay_response
 )
 from .services.voice_service import (
     transcribe_audio_file,
@@ -27,11 +29,11 @@ from .kb import get_kb
 
 app = FastAPI(
     title="NyayaMitra - Everyday Indic AI Lawyer API",
-    version="1.0.0",
-    description="Voice and text-enabled conversational legal triage, fact extraction, and legal notice drafting for everyday Indian civil grievances."
+    version="1.1.0",
+    description="Voice and text-enabled conversational legal triage, fact extraction, negotiation roleplay, and legal notice drafting for everyday Indian civil grievances."
 )
 
-# Enable CORS for React frontend
+# Enable CORS for frontend clients
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -48,7 +50,9 @@ def startup_event():
 def health_check():
     return {
         "status": "healthy",
-        "sarvam_api_connected": bool(SARVAM_API_KEY),
+        "sarvam_api_connected": bool(os.getenv("SARVAM_API_KEY", SARVAM_API_KEY)),
+        "active_llm_provider": os.getenv("LLM_PROVIDER", LLM_PROVIDER),
+        "active_llm_model": os.getenv("LLM_MODEL", LLM_MODEL),
         "supported_domains": ["rental_deposit", "unpaid_salary"]
     }
 
@@ -84,6 +88,39 @@ def get_notice_pdf(session_id: str):
     )
 
 
+def _build_escalation_payload(session_id: str, current_facts: Dict[str, Any], reason: Optional[str]) -> Dict[str, Any]:
+    escalation_msg = (
+        "⚠️ **Aapko ek Enrolled Advocate ya Official Legal Helpline se sampark karne ki salah di jaati hai.**\n\n"
+        "Kanooni aur suraksha niyamon ke mutabiq, criminal mamle, gharelu hinsa (domestic violence), "
+        "dahej vivad, ya family/divorce mamlon me automated legal drafting karna kanooni taur par uchit nahi hai.\n\n"
+        "**Emergency & Free Legal Aid Contacts:**\n"
+        "- **National Legal Services Authority (NALSA):** 15100 (Free 24x7 Legal Aid)\n"
+        "- **Women's National Helpline:** 1091 / 181\n"
+        "- **Emergency Police Support:** 112\n\n"
+        f"*Reason:* {reason or 'Domain falls outside civil deposit and wage recovery scope.'}"
+    )
+    upsert_case_state(
+        session_id=session_id,
+        domain="out_of_scope",
+        facts=current_facts,
+        is_complete=False,
+        escalation_triggered=True,
+        escalation_reason=reason
+    )
+    save_chat_message(session_id=session_id, role="assistant", content=escalation_msg)
+    return {
+        "session_id": session_id,
+        "domain": "out_of_scope",
+        "reply": escalation_msg,
+        "is_complete": False,
+        "escalation_triggered": True,
+        "escalation_reason": reason,
+        "missing_variables": [],
+        "facts": {},
+        "legal_notice_draft": None
+    }
+
+
 def process_chat_turn(
     session_id: str,
     user_msg: str,
@@ -93,8 +130,8 @@ def process_chat_turn(
     """
     Core state machine loop for a single conversation turn:
     1. Persists user message in SQLite.
-    2. Runs Triage (if domain unknown).
-    3. Triggers escalation/refusal if out of scope.
+    2. Runs continuous safety guardrail check (catches mid-conversation criminal/violence escalation).
+    3. Runs Triage (if domain unknown).
     4. Extracts/updates facts against Grounding KB.
     5. Checks missing variables -> generates targeted clarification OR assembles notice.
     6. Commits state and returns full result payload.
@@ -109,45 +146,20 @@ def process_chat_turn(
     current_domain = existing_state.get("domain") if existing_state else "unknown"
     current_facts = existing_state.get("facts", {}) if existing_state else {}
 
-    # 3. If domain is unknown, run Triage Classification
+    # 3. Continuous Safety Guardrail Check (runs on EVERY turn to catch mid-session escalations)
+    mid_turn_safety = check_deterministic_escalation(user_msg)
+    if mid_turn_safety and mid_turn_safety.is_escalation:
+        return _build_escalation_payload(session_id, current_facts, mid_turn_safety.escalation_reason)
+
+    # 4. If domain is unknown, run full Triage Classification
     if current_domain == "unknown" or not current_domain:
         triage = classify_user_intent(user_msg)
         current_domain = triage.domain
 
-        # Handle Out of Scope & Escalation
         if triage.domain == "out_of_scope" or triage.is_escalation:
-            escalation_msg = (
-                "⚠️ **Aapko ek Enrolled Advocate ya Official Legal Helpline se sampark karne ki salah di jaati hai.**\n\n"
-                "Kanooni aur suraksha niyamon ke mutabiq, criminal mamle, gharelu hinsa (domestic violence), "
-                "dahej vivad, ya family/divorce mamlon me automated legal drafting karna kanooni taur par uchit nahi hai.\n\n"
-                "**Emergency & Free Legal Aid Contacts:**\n"
-                "- **National Legal Services Authority (NALSA):** 15100 (Free 24x7 Legal Aid)\n"
-                "- **Women's National Helpline:** 1091 / 181\n"
-                "- **Emergency Police Support:** 112\n\n"
-                f"*Reason:* {triage.escalation_reason or 'Domain falls outside civil deposit and wage recovery scope.'}"
-            )
-            upsert_case_state(
-                session_id=session_id,
-                domain="out_of_scope",
-                facts=current_facts,
-                is_complete=False,
-                escalation_triggered=True,
-                escalation_reason=triage.escalation_reason
-            )
-            save_chat_message(session_id=session_id, role="assistant", content=escalation_msg)
-            return {
-                "session_id": session_id,
-                "domain": "out_of_scope",
-                "reply": escalation_msg,
-                "is_complete": False,
-                "escalation_triggered": True,
-                "escalation_reason": triage.escalation_reason,
-                "missing_variables": [],
-                "facts": {},
-                "legal_notice_draft": None
-            }
+            return _build_escalation_payload(session_id, current_facts, triage.escalation_reason)
 
-    # 4. In-Scope: Extraction & Missing Variable Audit Loop
+    # 5. In-Scope: Extraction & Missing Variable Audit Loop
     updated_facts = extract_facts(
         domain=current_domain,
         new_message=user_msg,
@@ -165,9 +177,20 @@ def process_chat_turn(
         kb = get_kb(current_domain)
         standing_text = kb["grounded_legal_standing"]["hi"] if kb else ""
         
+        # Add honest evidentiary risk warning if proof is oral/informal
+        proof_val = str(updated_facts.get("proof_status", ""))
+        evidentiary_warning = ""
+        if proof_val in ("oral_agreement_only", "informal_or_whatsapp"):
+            evidentiary_warning = (
+                "\n\n⚠️ **Evidentiary Risk Advisory (Oral / Cash Arrangement):** Chunki aapke paas written agreement ya formal bank receipt nahi hai, "
+                "court me sabit karne ke liye aapko secondary saboot (jaise bijli ka bill, padosi/witness बयान, ya WhatsApp message/call recording) "
+                "sambhal kar rakhne chahiye. Fir bhi, yeh Legal Notice bhejna aapka pehla strong kanooni kadam hai."
+            )
+
         reply_msg = (
             f"✅ **Aapke sabhi zaroori facts verify ho chuke hain.**\n\n"
-            f"**Aapki Kanooni Sthiti (Legal Standing):**\n{standing_text}\n\n"
+            f"**Aapki Kanooni Sthiti (Legal Standing):**\n{standing_text}"
+            f"{evidentiary_warning}\n\n"
             f"Maine aapke liye ek Formal Legal Notice of Demand draft kar diya hai. "
             f"Aap ise verify karke samne wali party ko Speed Post, WhatsApp, ya Email ke zariye bhej sakte hain."
         )
@@ -181,7 +204,7 @@ def process_chat_turn(
             language_code=language_code
         )
 
-    # 5. Commit state updates back to SQLite
+    # 6. Commit state updates back to SQLite
     upsert_case_state(
         session_id=session_id,
         domain=current_domain,
@@ -204,6 +227,17 @@ def process_chat_turn(
         "legal_notice_draft": legal_draft
     }
 
+
+def process_roleplay_turn(session_id: str, user_argument: str, language_code: Optional[str] = None) -> Dict[str, str]:
+    """Runs a single turn of the counterparty negotiation practice simulator."""
+    state = get_case_state(session_id)
+    domain = state.get("domain", "rental_deposit") if state else "rental_deposit"
+    if domain not in ("rental_deposit", "unpaid_salary"):
+        domain = "rental_deposit"
+    facts = state.get("facts", {}) if state else {}
+    return generate_roleplay_response(domain=domain, facts=facts, user_argument=user_argument, language_code=language_code)
+
+
 @app.post("/chat/{session_id}", response_model=ChatResponse)
 def handle_chat(session_id: str, request: ChatRequest):
     user_msg = request.message.strip()
@@ -220,6 +254,15 @@ def handle_chat(session_id: str, request: ChatRequest):
 
     result = process_chat_turn(session_id=session_id, user_msg=user_msg, audio_url=request.audio_url, language_code=lang)
     return ChatResponse(**result)
+
+
+@app.post("/roleplay/{session_id}")
+def handle_roleplay(session_id: str, request: ChatRequest):
+    user_arg = request.message.strip()
+    if not user_arg:
+        raise HTTPException(status_code=400, detail="Argument cannot be empty.")
+    return process_roleplay_turn(session_id=session_id, user_argument=user_arg, language_code=request.language_code)
+
 
 @app.post("/audio-chat/{session_id}", response_model=AudioChatResponse)
 async def handle_audio_chat(session_id: str, file: UploadFile = File(...)):

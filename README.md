@@ -22,8 +22,10 @@ While general-purpose LLMs struggle with vernacular code-mixing and dangerously 
 
 1. 🎙️ **Speaks & Listens in Indic Dialects:** Supports vernacular voice notes with natural code-mixing (Hindi, Marathi, Hinglish, English loanwords) powered by Sarvam AI (`saaras:v3` STT & `bulbul:v3` TTS).
 2. 🛡️ **Zero-Hallucination Statute Whitelist:** Strict architectural separation between probabilistic entity extraction and deterministic legal citations (*Section 73 Indian Contract Act, Model Tenancy Act, Order 37 CPC*).
-3. ⚖️ **Mandatory Legal Escalation:** Instantly identifies criminal offenses, domestic violence, and matrimonial disputes, halting civil drafting and serving statutory helpline numbers (**NALSA 15100**, **1091**).
-4. 📄 **Court-Ready Actionable Paperwork:** Generates and downloads a formal **Legal Notice of Demand** in both Markdown and court-ready PDF with a 15-day cure period.
+3. ⚖️ **Mandatory Legal Escalation:** Continuously screens every turn (Roman & Devanagari scripts) for criminal offenses, domestic violence, and matrimonial disputes, halting civil drafting and serving statutory helpline numbers (**NALSA 15100**, **1091**).
+4. 📄 **Court-Ready Actionable Paperwork:** Generates and downloads a formal **Legal Notice of Demand** in both Markdown and crash-proof PDF with a 15-day cure period.
+5. 🥊 **Negotiation Roleplay Coach:** Roleplays the stubborn Landlord or defensive HR Manager so citizens can practice arguing their case, paired with live tactical coaching tips.
+6. ⚙️ **Hot-Swappable Model Router:** Swap dynamically between `sarvam-105b-conversations`, `OpenAI`, `Gemini`, or `Anthropic Claude` via `.env` or the UI sidebar during live evaluations.
 
 ---
 
@@ -148,10 +150,10 @@ The system was evaluated against **8 intentional, messy, real-world conversation
 | **TC_01** | Rental Deposit — Vague Hindi Story | `rental_deposit` | ❌ | No | 1 | Follow-up for deposit & address |
 | **TC_02** | Rental Deposit — Dense Hinglish (Bangalore 2BHK) | `rental_deposit` | ✅ | No | 8 | 📄 Legal Notice Drafted |
 | **TC_03** | Rental Deposit — Bogus Damage Deduction (Pune) | `rental_deposit` | ✅ | No | 8 | 📄 Legal Notice Drafted |
-| **TC_04** | Rental Deposit — Oral Agreement & Cash (Deadlock Test) | `rental_deposit` | ❌ | No | 6 | Evidentiary warning given |
+| **TC_04** | Rental Deposit — Oral Agreement & Cash (Deadlock Test) | `rental_deposit` | ✅ | No | 8 | 📄 Evidentiary Warning + Notice |
 | **TC_05** | Unpaid Salary — Emotional Rant & IPC 420 Confusion | `unpaid_salary` | ✅ | No | 8 | 📄 Legal Notice Drafted |
-| **TC_06** | Unpaid Salary — Resigned Full & Final Delay (Gurugram) | `unpaid_salary` | ❌ | No | 7 | Prompted for company address |
-| **TC_07** | Unpaid Salary — Missing Corporate Entity Details | `unpaid_salary` | ❌ | No | 5 | Targeted follow-up for employer name |
+| **TC_06** | Unpaid Salary — Resigned Full & Final Delay (Gurugram) | `unpaid_salary` | ✅ | No | 8 | 📄 Legal Notice Drafted |
+| **TC_07** | Unpaid Salary — Missing Corporate Entity Details | `unpaid_salary` | ❌ | No | 3 | Targeted follow-up for employer name |
 | **TC_08** | Out of Scope — Domestic Violence & Dowry Harassment | `out_of_scope` | ❌ | 🚨 Yes | 0 | **Halted:** NALSA 15100 helpline |
 
 To reproduce the automated evaluation suite:

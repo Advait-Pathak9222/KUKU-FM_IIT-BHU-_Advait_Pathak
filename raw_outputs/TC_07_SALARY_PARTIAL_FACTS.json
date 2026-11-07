@@ -19,11 +19,11 @@
     {
       "turn": 1,
       "role": "assistant",
-      "content": "Bhai, yeh salary ka matter sach mein bahut tension deta hai, main samajh sakta hoon. \nDhyan rahe ki yeh ek civil aur labour issue hai, isliye IPC 420 ke tehat seedha criminal case ya arrest nahi hota. \nLegal notice bhejne ke liye mujhe bas do details chahiye: aapka poora naam (jo offer letter par hai) kya hai, aur company ya employer ka poora naam kya hai?",
+      "content": "समझ सकता हूँ कि 3 महीने से 90 हज़ार रुपये salary रुकना बहुत stressful होता है, पर tension मत लीजिए, आपके पास offer letter और bank statement जैसे documents हैं इसलिए आपके civil legal remedies काफी strong हैं। बस legal notice draft करने के लिए मुझे आपकी details चाहिए: company records या offer letter पर जो आपका full name दर्ज है वो क्या है, और employer या company का पूरा नाम क्या है?",
       "state_snapshot": {
         "session_id": "eval_tc_07_salary_partial_facts",
         "domain": "unpaid_salary",
-        "reply": "Bhai, yeh salary ka matter sach mein bahut tension deta hai, main samajh sakta hoon. \nDhyan rahe ki yeh ek civil aur labour issue hai, isliye IPC 420 ke tehat seedha criminal case ya arrest nahi hota. \nLegal notice bhejne ke liye mujhe bas do details chahiye: aapka poora naam (jo offer letter par hai) kya hai, aur company ya employer ka poora naam kya hai?",
+        "reply": "समझ सकता हूँ कि 3 महीने से 90 हज़ार रुपये salary रुकना बहुत stressful होता है, पर tension मत लीजिए, आपके पास offer letter और bank statement जैसे documents हैं इसलिए आपके civil legal remedies काफी strong हैं। बस legal notice draft करने के लिए मुझे आपकी details चाहिए: company records या offer letter पर जो आपका full name दर्ज है वो क्या है, और employer या company का पूरा नाम क्या है?",
         "is_complete": false,
         "escalation_triggered": false,
         "escalation_reason": null,
@@ -36,39 +36,8 @@
         ],
         "facts": {
           "total_amount_owed": 90000,
-          "unpaid_months": "last 3 months",
+          "unpaid_months": "Last 3 months",
           "proof_status": "offer_letter_and_slips"
-        },
-        "legal_notice_draft": null
-      }
-    },
-    {
-      "turn": 2,
-      "role": "user",
-      "content": "Mera naam Rahul Verma hai aur main wahan Senior Software Engineer tha."
-    },
-    {
-      "turn": 2,
-      "role": "assistant",
-      "content": "Rahul ji, aapki pareshani bilkul samajh aa rahi hai. \n\nCompany ya employer ka poora naam kya hai, aur aapka office kis sheher mein sthit tha jahan aap kaam karte the? \n\n(Agar aap kisi ko arrest karwana chahte hain, toh dhyan dein ki salary ka maamla pehle civil aur labour maamla hota hai.)",
-      "state_snapshot": {
-        "session_id": "eval_tc_07_salary_partial_facts",
-        "domain": "unpaid_salary",
-        "reply": "Rahul ji, aapki pareshani bilkul samajh aa rahi hai. \n\nCompany ya employer ka poora naam kya hai, aur aapka office kis sheher mein sthit tha jahan aap kaam karte the? \n\n(Agar aap kisi ko arrest karwana chahte hain, toh dhyan dein ki salary ka maamla pehle civil aur labour maamla hota hai.)",
-        "is_complete": false,
-        "escalation_triggered": false,
-        "escalation_reason": null,
-        "missing_variables": [
-          "employer_company_name",
-          "office_location",
-          "employment_status"
-        ],
-        "facts": {
-          "total_amount_owed": 90000,
-          "unpaid_months": "last 3 months",
-          "proof_status": "offer_letter_and_slips",
-          "employee_name": "Rahul Verma",
-          "designation": "Senior Software Engineer"
         },
         "legal_notice_draft": null
       }
@@ -77,21 +46,21 @@
   "final_case_state": {
     "session_id": "eval_tc_07_salary_partial_facts",
     "domain": "unpaid_salary",
-    "reply": "Rahul ji, aapki pareshani bilkul samajh aa rahi hai. \n\nCompany ya employer ka poora naam kya hai, aur aapka office kis sheher mein sthit tha jahan aap kaam karte the? \n\n(Agar aap kisi ko arrest karwana chahte hain, toh dhyan dein ki salary ka maamla pehle civil aur labour maamla hota hai.)",
+    "reply": "समझ सकता हूँ कि 3 महीने से 90 हज़ार रुपये salary रुकना बहुत stressful होता है, पर tension मत लीजिए, आपके पास offer letter और bank statement जैसे documents हैं इसलिए आपके civil legal remedies काफी strong हैं। बस legal notice draft करने के लिए मुझे आपकी details चाहिए: company records या offer letter पर जो आपका full name दर्ज है वो क्या है, और employer या company का पूरा नाम क्या है?",
     "is_complete": false,
     "escalation_triggered": false,
     "escalation_reason": null,
     "missing_variables": [
+      "employee_name",
       "employer_company_name",
       "office_location",
+      "designation",
       "employment_status"
     ],
     "facts": {
       "total_amount_owed": 90000,
-      "unpaid_months": "last 3 months",
-      "proof_status": "offer_letter_and_slips",
-      "employee_name": "Rahul Verma",
-      "designation": "Senior Software Engineer"
+      "unpaid_months": "Last 3 months",
+      "proof_status": "offer_letter_and_slips"
     },
     "legal_notice_draft": null
   }

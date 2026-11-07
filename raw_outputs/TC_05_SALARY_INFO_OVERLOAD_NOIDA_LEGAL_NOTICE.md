@@ -1,7 +1,7 @@
 **FORMAL LEGAL NOTICE OF DEMAND FOR UNPAID SALARY AND DUES**
 *(Sent via Registered Email / Speed Post)*
 
-**Date:** 06 November, 2026
+**Date:** 07 November, 2026
 
 **To:**
 **The Management / Directors**
@@ -20,7 +20,7 @@ Sir/Madam,
 
 Under instructions and on behalf of myself, **Rahul Verma**, I hereby issue this Formal Notice of Demand regarding the illegal withholding of my legitimate earned remuneration:
 
-1. **EMPLOYMENT & ROLE:** That I was employed with **TechNova Solutions Pvt Ltd** at your **Noida** office as **Senior Software Engineer**. My employment is evidenced by valid documentation including offer_letter_and_slips.
+1. **EMPLOYMENT & ROLE:** That I was employed with **TechNova Solutions Pvt Ltd** at your **Noida** office as **Senior Software Engineer**. My employment is evidenced by valid documentation including official Offer Letter, appointment records, and salary statements.
 
 2. **SERVICE & SEPARATION:** That I discharged my professional duties diligently. My employment status is **resigned**, having fulfilled all contractual obligations including handover.
 

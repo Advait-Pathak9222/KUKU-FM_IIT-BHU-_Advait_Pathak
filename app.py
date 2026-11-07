@@ -211,6 +211,24 @@ def send_audio_message(audio_bytes: bytes, filename: str = "voice.wav"):
     except Exception as e:
         return {"reply": f"⚠️ Voice processing error: {e}", "error": True}
 
+def send_roleplay_message(argument_text: str):
+    session_id = st.session_state.session_id
+    payload = {"message": argument_text}
+    try:
+        res = requests.post(f"{BACKEND_URL}/roleplay/{session_id}", json=payload, timeout=10)
+        if res.status_code == 200:
+            return res.json()
+    except Exception:
+        pass
+    try:
+        from backend.app.main import process_roleplay_turn
+        return process_roleplay_turn(session_id=session_id, user_argument=argument_text)
+    except Exception as e:
+        return {"counterparty_reply": f"⚠️ Error: {e}", "coach_tip": ""}
+
+if "roleplay_history" not in st.session_state:
+    st.session_state.roleplay_history = []
+
 # --- Sidebar: Transparent Reasoning & Fact Sheet ---
 with st.sidebar:
     st.markdown("### 🏛️ Case Intelligence")
@@ -221,6 +239,7 @@ with st.sidebar:
     if st.button("🔄 Reset / Start New Case", use_container_width=True):
         st.session_state.session_id = f"user_{uuid.uuid4().hex[:8]}"
         st.session_state.messages = []
+        st.session_state.roleplay_history = []
         st.session_state.case_state = {
             "domain": "unknown",
             "facts": {},
@@ -271,7 +290,7 @@ with st.sidebar:
         for k, v in facts.items():
             clean_key = k.replace("_", " ").title()
             val_display = str(v)
-            if "amount" in k.lower():
+            if "amount" in k.lower() or "owed" in k.lower():
                 try:
                     val_display = f"₹{int(float(v)):,}"
                 except ValueError:
@@ -303,6 +322,33 @@ with st.sidebar:
         st.session_state.preset_input = "Mera pati aur uske gharwale dahej ke liye maar-peet kar rahe hain aur mera bachha chheen liya hai. Mujhe FIR karni hai aur divorce lena hai."
         st.rerun()
 
+    st.markdown("---")
+    with st.expander("⚙️ Model Hot-Swap (Interview Mode)"):
+        st.caption("Swap LLM provider & model dynamically on the fly.")
+        prov = st.selectbox(
+            "LLM Provider",
+            ["sarvam", "openai", "gemini", "anthropic", "custom_openai"],
+            index=0
+        )
+        default_mdl = {
+            "sarvam": "sarvam-105b-conversations",
+            "openai": "gpt-4o-mini",
+            "gemini": "gemini-2.5-flash",
+            "anthropic": "claude-3-5-sonnet-latest",
+            "custom_openai": "gpt-4o"
+        }[prov]
+        mdl = st.text_input("Model Name", value=os.getenv("LLM_MODEL", default_mdl))
+        custom_key = st.text_input("Override API Key (Optional)", type="password")
+        if st.button("Apply Model Config", use_container_width=True):
+            os.environ["LLM_PROVIDER"] = prov
+            os.environ["LLM_MODEL"] = mdl
+            if custom_key.strip():
+                if prov == "sarvam":
+                    os.environ["SARVAM_API_KEY"] = custom_key.strip()
+                else:
+                    os.environ["LLM_API_KEY"] = custom_key.strip()
+            st.toast(f"Active Model: {prov} / {mdl}", icon="✅")
+
 # --- Main App Header ---
 st.markdown("""
 <div class="brand-header">
@@ -313,6 +359,7 @@ st.markdown("""
         <span class="pill-badge">🧠 Sarvam-105B Reasoning</span>
         <span class="pill-badge">🔊 Bulbul Indic TTS</span>
         <span class="pill-badge">🛡️ Zero-Hallucination Statute Whitelist</span>
+        <span class="pill-badge">🥊 Negotiation Roleplay Coach</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -381,16 +428,19 @@ if st.session_state.case_state.get("is_complete") and st.session_state.case_stat
             mime="text/markdown"
         )
 
-# --- Clean Input Controls (Tabs for Voice vs Text) ---
+# --- Clean Input Controls (Tabs for Voice, Text, and Negotiation Practice) ---
 st.markdown("---")
-tab_voice, tab_text = st.tabs(["🎙️ Speak Voice Note (Indic / Hindi / Hinglish)", "💬 Type Message"])
+tab_voice, tab_text, tab_roleplay = st.tabs([
+    "🎙️ Speak Voice Note (Indic / Hinglish)",
+    "💬 Type Message",
+    "🥊 Practice Arguing (Roleplay the Other Side)"
+])
 
 # TAB 1: VOICE INPUT
 with tab_voice:
     v_col1, v_col2 = st.columns([2, 1])
     with v_col1:
-        st.caption("Click the red button below, speak your problem naturally in Hindi or Hinglish, then click stop.")
-        # Unique dynamic key prevents stale widget replay loops
+        st.caption("Click the red button below, speak your problem naturally in Hindi, Marathi, or Hinglish, then click stop.")
         recorder_key = f"voice_input_{st.session_state.recorder_counter}"
         audio_val = st.audio_input("Record Voice", key=recorder_key, label_visibility="collapsed")
     with v_col2:
@@ -422,18 +472,15 @@ with tab_voice:
 
                 # 3. Handle response exactly once
                 if not res.get("error"):
-                    # Update user message with transcript
                     if res.get("user_transcription"):
                         st.session_state.messages[-1]["content"] = f"🎙️ **Transcribed ({res.get('detected_language', 'Indic')}):**\n\"{res['user_transcription']}\""
 
-                    # Append Assistant reply
                     st.session_state.messages.append({
                         "role": "assistant",
                         "content": res["reply"],
                         "audio_b64": res.get("audio_base64")
                     })
 
-                    # Update case state
                     st.session_state.case_state = {
                         "domain": res["domain"],
                         "facts": res["facts"],
@@ -442,7 +489,6 @@ with tab_voice:
                         "escalation_triggered": res.get("escalation_triggered", False),
                         "legal_notice_draft": res.get("legal_notice_draft")
                     }
-                    # Increment counter to refresh widget cleanly on next turn
                     st.session_state.recorder_counter += 1
                     st.rerun()
                 else:
@@ -451,7 +497,7 @@ with tab_voice:
 # TAB 2: TEXT INPUT
 with tab_text:
     default_text = st.session_state.pop("preset_input", "")
-    text_val = st.chat_input("Type your situation in Hindi, Hinglish, or English...", key="text_chat_input")
+    text_val = st.chat_input("Type your situation in Hindi, Marathi, Hinglish, or English...", key="text_chat_input")
     
     active_text = text_val or default_text
     if active_text:
@@ -476,3 +522,30 @@ with tab_text:
             st.rerun()
         else:
             st.error(res["reply"])
+
+# TAB 3: PRACTICE ARGUING / ROLEPLAY COUNTERPARTY
+with tab_roleplay:
+    rp_domain = st.session_state.case_state.get("domain", "rental_deposit")
+    opponent_label = "Stubborn Landlord (Makaan-Maalik)" if rp_domain != "unpaid_salary" else "Defensive Company HR / Manager"
+    st.markdown(f"**🥊 Practice Arguing Your Case Against: `{opponent_label}`**")
+    st.caption("NyayaMitra roleplays the other side pushing back with common excuses, and coaches you on how to counter-argue using Indian civil law.")
+    
+    for rp_msg in st.session_state.roleplay_history:
+        with st.chat_message("user"):
+            st.markdown(f"**You:** {rp_msg['user']}")
+        with st.chat_message("assistant"):
+            st.markdown(f"🗣️ **{opponent_label}:** {rp_msg['counterparty_reply']}")
+            if rp_msg.get("coach_tip"):
+                st.info(f"💡 **NyayaMitra Tactical Coach:** {rp_msg['coach_tip']}")
+
+    rp_input = st.chat_input(f"Practice what you will say to the {opponent_label}...", key="roleplay_chat_input")
+    if rp_input:
+        with st.spinner(f"🗣️ Simulating {opponent_label} & generating legal coaching tip..."):
+            rp_res = send_roleplay_message(rp_input)
+        st.session_state.roleplay_history.append({
+            "user": rp_input,
+            "counterparty_reply": rp_res.get("counterparty_reply", ""),
+            "coach_tip": rp_res.get("coach_tip", "")
+        })
+        st.rerun()
+

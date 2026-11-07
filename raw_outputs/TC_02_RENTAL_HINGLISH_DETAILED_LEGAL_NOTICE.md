@@ -1,7 +1,7 @@
 **FORMAL LEGAL NOTICE OF DEMAND**
 *(Sent via Speed Post / Registered Email / WhatsApp)*
 
-**Date:** 06 November, 2026
+**Date:** 07 November, 2026
 
 **To:**
 **Ramesh Kumar**
@@ -19,11 +19,11 @@ Sir/Madam,
 
 Under instructions and on behalf of myself, **Advait Pathak**, I hereby serve upon you this Formal Notice of Demand regarding the illegal retention of my security deposit:
 
-1. **TENANCY & SECURITY DEPOSIT:** That I was a lawful tenant at **Indiranagar, Bangalore**. At the inception of the tenancy, a total refundable security deposit of **Rs. 80000/-** was remitted to you via whatsapp_chats.
+1. **TENANCY & SECURITY DEPOSIT:** That I was a lawful tenant at **Indiranagar, Bangalore**. At the inception of the tenancy, a total refundable security deposit of **Rs. 80000/-** was remitted to you via documented WhatsApp communications and possession handover records.
 
 2. **VACATION & HANDOVER:** That I lawfully vacated the tenancy premises and handed over peaceful, vacant possession along with keys on **15 October**. The premises were handed over in good order, reasonable wear and tear excepted.
 
-3. **UNLAWFUL WITHHOLDING:** That despite repeated verbal and written requests, you have failed and neglected to refund the balance sum of **Rs. 35000/-**, citing "painting and deep cleaning", without providing any verified inspection report, legitimate contractor invoices, or legal basis for such deduction.
+3. **UNLAWFUL WITHHOLDING:** That despite repeated verbal and written requests, you have failed and neglected to refund the balance sum of **Rs. 35000/-**, citing "Painting and deep cleaning", without providing any verified inspection report, legitimate contractor invoices, or legal basis for such deduction.
 
 4. **LEGAL LIABILITY:** That the security deposit is held by the landlord in a fiduciary capacity and cannot be appropriated for routine maintenance or normal wear and tear. Your failure to return the money constitutes a willful breach of contract under Section 73 of the Indian Contract Act, 1872, and unjust enrichment.
 

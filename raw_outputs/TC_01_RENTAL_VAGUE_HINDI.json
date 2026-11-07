@@ -19,11 +19,11 @@
     {
       "turn": 1,
       "role": "assistant",
-      "content": "Samajh sakta hoon bhaiya, deposit wapas na milna sach mein bahut pareshani ki baat hai. \n\nKripya batayein, aapka poora naam kya hai jo rent agreement ya payment receipt par darj hai, aur aapke landlord ka poora naam kya hai? \n\n(Waise, yeh ek civil matter hai, isliye seedhe IPC 420 ke tehat FIR ya arrest karwana pehle sahi tareeka nahi hai.)",
+      "content": "समझ सकता हूँ, ये situation सच में बहुत stressful होती है। आप tension मत लीजिए, अपना deposit वापस पाने के लिए आपके पास strong civil legal remedies मौजूद हैं। बस आगे का process शुरू करने के लिए मुझे ये details चाहिए: आपका full name क्या है जो rent agreement या payment receipt पर लिखा है, और मकान-मालिक (landlord) का पूरा नाम क्या है?",
       "state_snapshot": {
         "session_id": "eval_tc_01_rental_vague_hindi",
         "domain": "rental_deposit",
-        "reply": "Samajh sakta hoon bhaiya, deposit wapas na milna sach mein bahut pareshani ki baat hai. \n\nKripya batayein, aapka poora naam kya hai jo rent agreement ya payment receipt par darj hai, aur aapke landlord ka poora naam kya hai? \n\n(Waise, yeh ek civil matter hai, isliye seedhe IPC 420 ke tehat FIR ya arrest karwana pehle sahi tareeka nahi hai.)",
+        "reply": "समझ सकता हूँ, ये situation सच में बहुत stressful होती है। आप tension मत लीजिए, अपना deposit वापस पाने के लिए आपके पास strong civil legal remedies मौजूद हैं। बस आगे का process शुरू करने के लिए मुझे ये details चाहिए: आपका full name क्या है जो rent agreement या payment receipt पर लिखा है, और मकान-मालिक (landlord) का पूरा नाम क्या है?",
         "is_complete": false,
         "escalation_triggered": false,
         "escalation_reason": null,
@@ -34,40 +34,10 @@
           "deposit_amount_paid",
           "amount_withheld",
           "vacating_date",
-          "landlord_deduction_reason",
-          "proof_status"
-        ],
-        "facts": {},
-        "legal_notice_draft": null
-      }
-    },
-    {
-      "turn": 2,
-      "role": "user",
-      "content": "Mera poora naam Advait Pathak hai."
-    },
-    {
-      "turn": 2,
-      "role": "assistant",
-      "content": "Samajh sakta hoon ki aap apne security deposit ko lekar kaafi pareshan honge, Advait Pathak ji. \n\nKiraye ke deposit ka maamla civil nature ka hota hai, isliye pehle civil ya rent agreement ke hisaab se hi aage badhna sahi rahega. \n\nKripya makaan-maalik (landlord) ka poora naam bata dein, aur yeh bhi batayein ki kiraye ka makaan ya flat kis sheher aur locality mein sthit tha?",
-      "state_snapshot": {
-        "session_id": "eval_tc_01_rental_vague_hindi",
-        "domain": "rental_deposit",
-        "reply": "Samajh sakta hoon ki aap apne security deposit ko lekar kaafi pareshan honge, Advait Pathak ji. \n\nKiraye ke deposit ka maamla civil nature ka hota hai, isliye pehle civil ya rent agreement ke hisaab se hi aage badhna sahi rahega. \n\nKripya makaan-maalik (landlord) ka poora naam bata dein, aur yeh bhi batayein ki kiraye ka makaan ya flat kis sheher aur locality mein sthit tha?",
-        "is_complete": false,
-        "escalation_triggered": false,
-        "escalation_reason": null,
-        "missing_variables": [
-          "landlord_name",
-          "property_address",
-          "deposit_amount_paid",
-          "amount_withheld",
-          "vacating_date",
-          "landlord_deduction_reason",
           "proof_status"
         ],
         "facts": {
-          "tenant_name": "Advait Pathak"
+          "landlord_deduction_reason": "Arbitrary refusal / claiming lack of funds and not responding to calls"
         },
         "legal_notice_draft": null
       }
@@ -76,21 +46,21 @@
   "final_case_state": {
     "session_id": "eval_tc_01_rental_vague_hindi",
     "domain": "rental_deposit",
-    "reply": "Samajh sakta hoon ki aap apne security deposit ko lekar kaafi pareshan honge, Advait Pathak ji. \n\nKiraye ke deposit ka maamla civil nature ka hota hai, isliye pehle civil ya rent agreement ke hisaab se hi aage badhna sahi rahega. \n\nKripya makaan-maalik (landlord) ka poora naam bata dein, aur yeh bhi batayein ki kiraye ka makaan ya flat kis sheher aur locality mein sthit tha?",
+    "reply": "समझ सकता हूँ, ये situation सच में बहुत stressful होती है। आप tension मत लीजिए, अपना deposit वापस पाने के लिए आपके पास strong civil legal remedies मौजूद हैं। बस आगे का process शुरू करने के लिए मुझे ये details चाहिए: आपका full name क्या है जो rent agreement या payment receipt पर लिखा है, और मकान-मालिक (landlord) का पूरा नाम क्या है?",
     "is_complete": false,
     "escalation_triggered": false,
     "escalation_reason": null,
     "missing_variables": [
+      "tenant_name",
       "landlord_name",
       "property_address",
       "deposit_amount_paid",
       "amount_withheld",
       "vacating_date",
-      "landlord_deduction_reason",
       "proof_status"
     ],
     "facts": {
-      "tenant_name": "Advait Pathak"
+      "landlord_deduction_reason": "Arbitrary refusal / claiming lack of funds and not responding to calls"
     },
     "legal_notice_draft": null
   }

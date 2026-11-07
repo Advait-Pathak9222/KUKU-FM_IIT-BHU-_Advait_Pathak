@@ -1,7 +1,7 @@
 import json
 import re
 from typing import Optional
-from .sarvam_client import get_sarvam_client
+from .sarvam_client import call_llm
 from ..models import TriageResult
 
 TRIAGE_SYSTEM_PROMPT = """You are a Legal Triage Classifier for an Indian legal assistance system.
@@ -23,11 +23,16 @@ Return your response strictly as valid JSON with no markdown wrapping:
   "escalation_reason": "Specific safety or out-of-scope trigger if is_escalation is true, else null"
 }"""
 
-# Deterministic regex safeguard keywords for immediate escalation
+# Deterministic regex safeguard keywords for immediate escalation (Roman + Devanagari Hindi/Marathi)
 ESCALATION_KEYWORDS = [
-    r"\bdahej\b", r"\bdowry\b", r"\bmaar-peet\b", r"\bmarpeet\b", r"\bdomestic violence\b",
-    r"\bdivorce\b", r"\btalaq\b", r"\bchild custody\b", r"\bpolice complaint\b", r"\bfir\b",
-    r"\brape\b", r"\bmurder\b", r"\bsuicide\b", r"\bphysical assault\b", r"\bthreatened to kill\b"
+    r"\bdahej\b", r"\bdowry\b", r"\bmaar-peet\b", r"\bmarpeet\b", r"\bmaarpeet\b", r"\bmaar peet\b",
+    r"\bdomestic violence\b", r"\bdomestic abuse\b", r"\bdivorce\b", r"\btalaq\b",
+    r"\bchild custody\b", r"\bpolice complaint\b", r"\bfir\b", r"\brape\b", r"\bmolest",
+    r"\bmurder\b", r"\bsuicide\b", r"\bphysical assault\b", r"\bthreatened to kill\b",
+    r"\bjaan se maar", r"\bkidnap", r"\bextortion\b",
+    # Devanagari equivalents (Hindi & Marathi) from Saaras STT transcripts
+    r"दहेज", r"हुंडा", r"मारपीट", r"मारहाण", r"घरेलू हिंसा", r"कौटुंबिक हिंसाचार",
+    r"तलाक", r"घटस्फोट", r"आत्महत्या", r"हत्या", r"बलात्कार", r"जीवे मारण्याची", r"जान से मारने"
 ]
 
 def check_deterministic_escalation(text: str) -> Optional[TriageResult]:
@@ -49,39 +54,26 @@ def classify_user_intent(message: str) -> TriageResult:
     if safety_override:
         return safety_override
 
-    # 2. Check for mock toggle or client availability
-    from ..config import USE_MOCK_SARVAM
-    client = get_sarvam_client()
-    if USE_MOCK_SARVAM or not client:
-        # Fallback keyword heuristic if API key is unavailable
-        lower = message.lower()
-        if any(w in lower for w in ["deposit", "landlord", "flat", "kiraya", "makaan"]):
-            return TriageResult(domain="rental_deposit", confidence=0.8, explanation="Rule-based keyword match for tenancy.")
-        elif any(w in lower for w in ["salary", "boss", "company", "vetan", "hr", "relieving"]):
-            return TriageResult(domain="unpaid_salary", confidence=0.8, explanation="Rule-based keyword match for salary.")
-        return TriageResult(domain="out_of_scope", confidence=0.5, explanation="Unrecognized domain.", is_escalation=True)
-
+    # 2. Call universal LLM router (or fallback if mock/offline)
     try:
-        response = client.chat.completions(
-            model="sarvam-105b-conversations",
-            messages=[
-                {"role": "system", "content": TRIAGE_SYSTEM_PROMPT},
-                {"role": "user", "content": f"Classify this user statement:\n\"{message}\""}
-            ],
+        content = call_llm(
+            system_prompt=TRIAGE_SYSTEM_PROMPT,
+            user_prompt=f"Classify this user statement:\n\"{message}\"",
             temperature=0.1
         )
-        content = response.choices[0].message.content.strip()
-        # Clean markdown formatting if present
-        if content.startswith("```"):
-            content = re.sub(r"^```(?:json)?\n", "", content)
-            content = re.sub(r"\n```$", "", content)
-        data = json.loads(content)
-        return TriageResult(**data)
+        if content:
+            # Extract JSON object resiliently even if wrapped in markdown or prose
+            match = re.search(r"\{.*\}", content, re.DOTALL)
+            json_str = match.group(0) if match else content
+            data = json.loads(json_str)
+            return TriageResult(**data)
     except Exception as e:
-        # Fallback to rental_deposit or unpaid_salary if LLM JSON parse failed
-        lower = message.lower()
-        if "deposit" in lower or "landlord" in lower or "flat" in lower:
-            return TriageResult(domain="rental_deposit", confidence=0.7, explanation=f"Fallback match. Error: {e}")
-        elif "salary" in lower or "company" in lower or "resigned" in lower:
-            return TriageResult(domain="unpaid_salary", confidence=0.7, explanation=f"Fallback match. Error: {e}")
-        return TriageResult(domain="out_of_scope", confidence=0.5, explanation="Fallback out-of-scope.", is_escalation=True)
+        print(f"Triage LLM error: {e}")
+
+    # 3. Deterministic heuristic fallback if mock mode or LLM parse error
+    lower = message.lower()
+    if any(w in lower for w in ["deposit", "landlord", "flat", "kiraya", "makaan", "घरमालक", "डिपॉझिट", "भाडे", "किराया", "मकान"]):
+        return TriageResult(domain="rental_deposit", confidence=0.8, explanation="Rule-based keyword match for tenancy.")
+    elif any(w in lower for w in ["salary", "boss", "company", "vetan", "hr", "relieving", "पगार", "वेतन", "कंपनी"]):
+        return TriageResult(domain="unpaid_salary", confidence=0.8, explanation="Rule-based keyword match for salary.")
+    return TriageResult(domain="out_of_scope", confidence=0.5, explanation="Unrecognized domain.", is_escalation=True)

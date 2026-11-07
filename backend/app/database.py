@@ -1,3 +1,4 @@
+import os
 import sqlite3
 import json
 from datetime import datetime
@@ -5,41 +6,42 @@ from typing import List, Dict, Any, Optional
 from .config import DB_PATH
 
 def get_db_connection() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_PATH)
+    active_path = os.getenv("DB_PATH", DB_PATH)
+    conn = sqlite3.connect(active_path, timeout=15.0, check_same_thread=False)
     conn.row_factory = sqlite3.Row
+    _ensure_tables(conn)
     return conn
+
+def _ensure_tables(conn: sqlite3.Connection):
+    cursor = conn.cursor()
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS chat_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_id TEXT NOT NULL,
+        role TEXT NOT NULL CHECK(role IN ('user', 'assistant', 'system')),
+        content TEXT NOT NULL,
+        audio_url TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS case_state (
+        session_id TEXT PRIMARY KEY,
+        domain TEXT DEFAULT 'unknown',
+        facts_json TEXT NOT NULL,
+        is_complete BOOLEAN DEFAULT FALSE,
+        escalation_triggered BOOLEAN DEFAULT FALSE,
+        escalation_reason TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
+    conn.commit()
 
 def init_db():
     """Initializes SQLite database tables if they do not exist."""
     with get_db_connection() as conn:
-        cursor = conn.cursor()
-        
-        # 1. Chat history table
-        cursor.execute("""
-        CREATE TABLE IF NOT EXISTS chat_history (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            session_id TEXT NOT NULL,
-            role TEXT NOT NULL CHECK(role IN ('user', 'assistant', 'system')),
-            content TEXT NOT NULL,
-            audio_url TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-        """)
-        
-        # 2. Case state table
-        cursor.execute("""
-        CREATE TABLE IF NOT EXISTS case_state (
-            session_id TEXT PRIMARY KEY,
-            domain TEXT DEFAULT 'unknown',
-            facts_json TEXT NOT NULL,
-            is_complete BOOLEAN DEFAULT FALSE,
-            escalation_triggered BOOLEAN DEFAULT FALSE,
-            escalation_reason TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-        """)
-        conn.commit()
+        _ensure_tables(conn)
 
 def save_chat_message(session_id: str, role: str, content: str, audio_url: Optional[str] = None):
     with get_db_connection() as conn:
@@ -108,6 +110,12 @@ def upsert_case_state(
                 updated_at = excluded.updated_at
         """, (session_id, domain, facts_json, is_complete, escalation_triggered, escalation_reason, now))
         conn.commit()
+
+# Automatically ensure tables exist on module import (crucial for serverless/Streamlit Cloud in-process mode)
+try:
+    init_db()
+except Exception:
+    pass
 
 if __name__ == "__main__":
     init_db()

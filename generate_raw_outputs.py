@@ -3,13 +3,17 @@ import json
 from pathlib import Path
 from starlette.testclient import TestClient
 from backend.app.main import app
-from backend.app.database import init_db
+from backend.app.database import init_db, get_db_connection
 
 OUTPUT_DIR = Path(__file__).resolve().parent / "raw_outputs"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 def generate_raw_outputs():
     init_db()
+    with get_db_connection() as conn:
+        conn.execute("DELETE FROM chat_history WHERE session_id LIKE 'eval_%'")
+        conn.execute("DELETE FROM case_state WHERE session_id LIKE 'eval_%'")
+        conn.commit()
     client = TestClient(app)
     
     with open("test_cases/test_cases.json", "r", encoding="utf-8") as f:
@@ -42,10 +46,11 @@ def generate_raw_outputs():
         if not data1["is_complete"] and tc["category"] != "out_of_scope":
             missing = data1.get("missing_variables", [])
             followup_text = ""
-            if "tenant_name" in missing:
-                followup_text = "Mera poora naam Advait Pathak hai."
-            elif "employee_name" in missing or "designation" in missing:
-                followup_text = "Mera naam Rahul Verma hai aur main wahan Senior Software Engineer tha."
+            if len(missing) <= 2:
+                if "tenant_name" in missing:
+                    followup_text = "Mera poora naam Advait Pathak hai."
+                elif "employee_name" in missing or "designation" in missing:
+                    followup_text = "Mera naam Rahul Verma hai aur main wahan Senior Software Engineer tha."
             
             if followup_text:
                 print(f"  -> Simulating Turn 2 follow-up resolution: \"{followup_text}\"")
