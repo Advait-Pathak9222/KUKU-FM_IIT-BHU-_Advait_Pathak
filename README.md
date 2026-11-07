@@ -4,6 +4,7 @@
 > **Candidate:** Advait Pathak  
 > **Problem Chosen:** Problem 2 — Build an AI Lawyer  
 > **Tech Stack:** Python 3.10+, FastAPI, SQLite, Sarvam AI Suite (Saaras STT, Sarvam-105B Reasoning, Bulbul TTS), Streamlit, FPDF2  
+> **Repository:** [https://github.com/Advait-Pathak9222/KUKU-FM_IIT-BHU-_Advait_Pathak](https://github.com/Advait-Pathak9222/KUKU-FM_IIT-BHU-_Advait_Pathak)
 
 ---
 
@@ -12,10 +13,61 @@
 **NyayaMitra** is a voice and text-first conversational legal assistant built for ordinary people in India. It empowers vernacular citizens to resolve everyday civil grievances (**withheld rental security deposits** and **unpaid wages/severance**) without paying exorbitant advocate fees or falling victim to LLM hallucinations.
 
 ### Core Capabilities
-* 🎙️ **Indic Speech Perception:** Native voice-in (Sarvam Saaras STT) and voice-out (Sarvam Bulbul TTS) supporting Hindi, Hinglish, and regional dialects.
+* 🎙️ **Indic Speech Perception:** Native voice-in (Sarvam Saaras STT) and voice-out (Sarvam Bulbul TTS) supporting Hindi, Marathi, Hinglish, and regional dialects with natural code-mixing.
 * 🛡️ **Zero-Hallucination Statute Grounding:** Strict separation of probabilistic entity extraction from deterministic statute whitelists (*Section 73 Indian Contract Act, Model Tenancy Act, Order 37 CPC*).
 * ⚖️ **Mandatory Legal Escalation:** Immediately halts civil automation and refers to **NALSA (15100)** or **Women's Helpline (1091)** upon detecting criminal violence, dowry, or matrimonial disputes.
 * 📄 **Actionable Paperwork:** Once all variables are verified, generates and downloads a formal **Legal Notice of Demand** in Markdown and court-ready PDF format.
+
+---
+
+## 💰 Unit Economics & Real-World Production Scale
+
+Kuku FM explicitly evaluates submissions on *"what it costs at real-world volume and how it holds up at scale"*. Below is the complete economic and architectural breakdown:
+
+### 1. Cost per Case Resolved (50 Paise per Citizen)
+
+| Pipeline Step | Provider & Model | Resource Consumption | Cost (INR) |
+| :--- | :--- | :--- | :--- |
+| **Voice Ingestion** | Sarvam Saaras (`saaras:v3`) | ~20 seconds audio transcription + lang detect | ₹0.15 |
+| **Triage & Extraction** | Sarvam-105B-Conversations | ~1,200 tokens across 2 conversational turns | ₹0.20 |
+| **Spoken Advisory** | Sarvam Bulbul (`bulbul:v3`) | ~15 seconds natural speech synthesis | ₹0.15 |
+| **Notice Assembly & PDF** | Python Core (Deterministic) | Slot-filling + FPDF2 rendering (local CPU) | ₹0.00 |
+| **Total Cost per Case** | **End-to-End Civil Pipeline** | **Verified Notice + Audio Consultation** | **~₹0.50** |
+
+> **Economic Impact:** Compared to a traditional initial advocate consultation in India (₹2,500 – ₹5,000), NyayaMitra achieves a **99.98% cost reduction**, turning access to justice from an expensive privilege into a 50-paise utility.
+
+---
+
+### 2. Architecture & Infrastructure at Scale (100,000 Monthly Grievances)
+
+```
+                       ┌──────────────────────────────┐
+                       │ Cloudflare CDN / Rate Limits │
+                       └──────────────┬───────────────┘
+                                      ▼
+                       ┌──────────────────────────────┐
+                       │ Application Load Balancer    │
+                       └──────────────┬───────────────┘
+                                      ▼
+             ┌──────────────────────────────────────────────────┐
+             │ Stateless FastAPI Cluster (Auto-scaling 2–8 pods)│
+             └──────────┬─────────────────────────────┬─────────┘
+                        ▼                             ▼
+         ┌──────────────────────────────┐ ┌──────────────────────┐
+         │ Managed Postgres (Aurora)    │ │ Redis Shared Cache   │
+         │ - Session State & Audit Logs │ │ - Statute Whitelists │
+         │ - Connection Pool (PgBouncer)│ │ - Static Notice Tmpl │
+         └──────────────────────────────┘ └──────────────────────┘
+```
+
+* **Stateless Compute:** FastAPI services run containerized (Docker on AWS ECS / GCP Cloud Run) with CPU-based horizontal auto-scaling (100 concurrent requests per node).
+* **Database Transition:** The local SQLite storage is architected as an atomic document-state store; transitioning to Amazon Aurora PostgreSQL (or Supabase) requires simply swapping the DB connection URI, with PgBouncer connection pooling.
+* **Safety Ceilings:** Sessions are hard-capped at 4 clarification turns to prevent token runaway costs on ambiguous inputs.
+* **Total Estimated Hosting Cost at 100k Cases/Month:**
+  * Container Compute (2–4 vCPU nodes): ~$80/month
+  * Managed Database (Postgres): ~$50/month
+  * Sarvam AI API Volume (100,000 cases × ₹0.50): ₹50,000 (~$600/month)
+  * **Total Run-Rate: ~$730 / month (~₹61,000) to serve 100,000 Indian citizens.**
 
 ---
 
@@ -49,11 +101,11 @@
 ## 🚀 Quickstart Guide
 
 ### 1. Installation
-Clone the repository and install the dependencies:
+Clone the repository and install dependencies:
 ```bash
 git clone https://github.com/Advait-Pathak9222/KUKU-FM_IIT-BHU-_Advait_Pathak.git
 cd KUKU-FM_IIT-BHU-_Advait_Pathak
-pip install -r requirements.txt  # Or pip install fastapi uvicorn streamlit sarvamai fpdf2 python-dotenv
+pip install -r requirements.txt
 ```
 
 ### 2. Environment Configuration
