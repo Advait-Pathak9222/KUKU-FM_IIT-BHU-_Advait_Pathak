@@ -1,6 +1,7 @@
 # Secrets & Environment
 .env
 .env.*
+.streamlit/secrets.toml
 
 # Local Database
 *.db
@@ -20,3 +21,6 @@ __pycache__/
 venv/
 .venv/
 env/
+
+# Personal / College files
+22144031_*.pdf

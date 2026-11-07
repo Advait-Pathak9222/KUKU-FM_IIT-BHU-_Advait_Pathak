@@ -119,6 +119,15 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# --- Streamlit Cloud Secrets Loading ---
+try:
+    if hasattr(st, "secrets") and "SARVAM_API_KEY" in st.secrets:
+        os.environ["SARVAM_API_KEY"] = str(st.secrets["SARVAM_API_KEY"])
+    if hasattr(st, "secrets") and "USE_MOCK_SARVAM" in st.secrets:
+        os.environ["USE_MOCK_SARVAM"] = str(st.secrets["USE_MOCK_SARVAM"])
+except Exception:
+    pass
+
 # --- Backend Configuration ---
 BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000")
 
@@ -145,30 +154,62 @@ if "last_processed_audio_hash" not in st.session_state:
 if "recorder_counter" not in st.session_state:
     st.session_state.recorder_counter = 0
 
-# --- Helper Functions ---
+# --- Hybrid Dispatcher: Microservice HTTP + In-Process Cloud Fallback ---
 def send_text_message(message: str):
     session_id = st.session_state.session_id
     payload = {"message": message}
+    
+    # 1. Try microservice HTTP call if backend is active
     try:
-        res = requests.post(f"{BACKEND_URL}/chat/{session_id}", json=payload, timeout=25)
+        res = requests.post(f"{BACKEND_URL}/chat/{session_id}", json=payload, timeout=10)
         if res.status_code == 200:
             return res.json()
-        else:
-            return {"reply": f"⚠️ Server Error ({res.status_code}): {res.text}", "error": True}
+    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+        pass
+    except Exception:
+        pass
+
+    # 2. In-Process Fallback (Enables 1-Click Streamlit Community Cloud Deployment)
+    try:
+        from backend.app.main import process_chat_turn
+        lang = None
+        if any(w in message for w in ["आहे", "नाही", "माझं", "माझे", "आम्ही", "करा", "करावे", "मिळत", "रुपये", "घरमालक"]):
+            lang = "mr-IN"
+        elif any(w in message for w in ["hai", "nahi", "raha", "diya", "karo", "makaan", "kiraya", "bhaiya"]):
+            lang = "hi-IN"
+        return process_chat_turn(session_id=session_id, user_msg=message, language_code=lang)
     except Exception as e:
-        return {"reply": f"⚠️ Could not connect to backend at {BACKEND_URL}: {e}", "error": True}
+        return {"reply": f"⚠️ Error processing text: {e}", "error": True}
 
 def send_audio_message(audio_bytes: bytes, filename: str = "voice.wav"):
     session_id = st.session_state.session_id
     files = {"file": (filename, audio_bytes, "audio/wav")}
+    
+    # 1. Try microservice HTTP call if backend is active
     try:
-        res = requests.post(f"{BACKEND_URL}/audio-chat/{session_id}", files=files, timeout=35)
+        res = requests.post(f"{BACKEND_URL}/audio-chat/{session_id}", files=files, timeout=25)
         if res.status_code == 200:
             return res.json()
-        else:
-            return {"reply": f"⚠️ Audio processing failed ({res.status_code}): {res.text}", "error": True}
+    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+        pass
+    except Exception:
+        pass
+
+    # 2. In-Process Fallback (Enables 1-Click Streamlit Community Cloud Deployment)
+    try:
+        from backend.app.main import process_chat_turn
+        from backend.app.services.voice_service import transcribe_audio_file, generate_voice_response
+        transcript, lang = transcribe_audio_file(audio_bytes, filename=filename)
+        if not transcript:
+            return {"reply": "Failed to transcribe audio. Please speak clearly or use text input.", "error": True}
+        turn_res = process_chat_turn(session_id=session_id, user_msg=transcript, language_code=lang)
+        audio_b64 = generate_voice_response(turn_res["reply"], language_code=lang)
+        turn_res["user_transcription"] = transcript
+        turn_res["detected_language"] = lang
+        turn_res["audio_base64"] = audio_b64
+        return turn_res
     except Exception as e:
-        return {"reply": f"⚠️ Voice backend unreachable: {e}", "error": True}
+        return {"reply": f"⚠️ Voice processing error: {e}", "error": True}
 
 # --- Sidebar: Transparent Reasoning & Fact Sheet ---
 with st.sidebar:
@@ -306,18 +347,31 @@ if st.session_state.case_state.get("is_complete") and st.session_state.case_stat
         
     btn_col1, btn_col2 = st.columns([1, 3])
     with btn_col1:
+        pdf_bytes = None
         pdf_url = f"{BACKEND_URL}/notice/{st.session_state.session_id}/pdf"
         try:
-            pdf_res = requests.get(pdf_url)
+            pdf_res = requests.get(pdf_url, timeout=5)
             if pdf_res.status_code == 200:
-                st.download_button(
-                    label="📥 Download Notice (PDF)",
-                    data=pdf_res.content,
-                    file_name=f"Legal_Notice_{st.session_state.session_id}.pdf",
-                    mime="application/pdf",
-                    use_container_width=True
-                )
+                pdf_bytes = pdf_res.content
         except Exception:
+            pass
+
+        if not pdf_bytes and st.session_state.case_state.get("legal_notice_draft"):
+            try:
+                from backend.app.services.pdf_generator import generate_legal_notice_pdf
+                pdf_bytes = generate_legal_notice_pdf(st.session_state.case_state["legal_notice_draft"])
+            except Exception:
+                pass
+
+        if pdf_bytes:
+            st.download_button(
+                label="📥 Download Notice (PDF)",
+                data=pdf_bytes,
+                file_name=f"Legal_Notice_{st.session_state.session_id}.pdf",
+                mime="application/pdf",
+                use_container_width=True
+            )
+        else:
             st.caption("PDF service unavailable.")
     with btn_col2:
         st.download_button(
