@@ -222,7 +222,9 @@ def send_roleplay_message(argument_text: str):
         pass
     try:
         import importlib
+        import backend.app.services.extractor as _ext_mod
         import backend.app.main as _main_mod
+        importlib.reload(_ext_mod)
         importlib.reload(_main_mod)
         return _main_mod.process_roleplay_turn(session_id=session_id, user_argument=argument_text, include_audio=True)
     except Exception as e:
@@ -239,7 +241,9 @@ def send_audio_roleplay_message(audio_bytes: bytes, filename: str = "roleplay_vo
         pass
     try:
         import importlib
+        import backend.app.services.extractor as _ext_mod
         import backend.app.main as _main_mod
+        importlib.reload(_ext_mod)
         importlib.reload(_main_mod)
         from backend.app.services.voice_service import transcribe_audio_file
         transcript, lang = transcribe_audio_file(audio_bytes, filename=filename)
@@ -555,14 +559,21 @@ with tab_text:
         else:
             st.error(res["reply"])
 
-# TAB 3: PRACTICE ARGUING / ROLEPLAY COUNTERPARTY (VOICE + TEXT)
+# TAB 3: PRACTICE ARGUING / ROLEPLAY COUNTERPARTY (VOICE + TEXT + LIVE FACT CAPTURE)
 with tab_roleplay:
-    rp_domain = st.session_state.case_state.get("domain", "rental_deposit")
-    opponent_label = "Stubborn Landlord (Makaan-Maalik)" if rp_domain != "unpaid_salary" else "Defensive Company HR / Manager"
-    st.markdown(f"**🥊 Practice Arguing Your Case Against: `{opponent_label}` (Voice & Text)**")
-    st.caption("Speak into the mic (or type below) to argue directly with the counterparty. They will argue back in voice, and NyayaMitra's Tactical Coach will rate your legal point.")
+    rp_domain = st.session_state.case_state.get("domain", "unknown")
+    if rp_domain == "unpaid_salary":
+        opponent_label = "Defensive Company HR / Manager"
+    elif rp_domain == "rental_deposit":
+        opponent_label = "Stubborn Landlord (Makaan-Maalik)"
+    else:
+        opponent_label = "Counterparty (Landlord / Company HR — Auto-Detects as You Speak)"
+
+    st.markdown(f"**🥊 Practice Arguing Your Case Against: `{opponent_label}` (Live Fact-Capture & Coach)**")
+    st.caption("Start a brand-new case or continue your current case here! As you argue by voice or text, NyayaMitra extracts your facts into the sidebar, challenges you on missing details, and suggests your next legal argument.")
     
-    for rp_msg in st.session_state.roleplay_history:
+    latest_suggested = ""
+    for idx, rp_msg in enumerate(st.session_state.roleplay_history):
         with st.chat_message("user"):
             st.markdown(f"🎙️ **You:** {rp_msg['user']}")
             if rp_msg.get("user_audio_bytes"):
@@ -576,6 +587,14 @@ with tab_roleplay:
                     pass
             if rp_msg.get("coach_tip"):
                 st.info(f"💡 **NyayaMitra Tactical Coach:** {rp_msg['coach_tip']}")
+            if rp_msg.get("suggested_argument"):
+                latest_suggested = rp_msg["suggested_argument"]
+                st.success(f"🎯 **Suggested Next Argument (Speak or Click Below):**\n\"{rp_msg['suggested_argument']}\"")
+
+    if latest_suggested:
+        if st.button("⚡ Send Suggested Argument", key="use_suggested_rp_btn", use_container_width=True):
+            st.session_state.preset_rp_input = latest_suggested
+            st.rerun()
 
     rp_col1, rp_col2 = st.columns([1, 1])
     with rp_col1:
@@ -586,7 +605,12 @@ with tab_roleplay:
             label_visibility="collapsed"
         )
     with rp_col2:
-        st.caption("💡 **Tip:** Cite *Section 73 Contract Act*, *normal wear & tear*, or the *15-day Legal Notice* to make them back down!")
+        missing_now = st.session_state.case_state.get("missing_variables", [])
+        if missing_now:
+            clean_missing = ", ".join([m.replace("_", " ").title() for m in missing_now[:3]])
+            st.caption(f"📋 **Facts still needed while you argue:** `{clean_missing}`")
+        else:
+            st.caption("💡 **Tip:** Cite *Section 73 Contract Act*, *normal wear & tear*, or the *15-day Legal Notice* to make them back down!")
 
     if rp_audio is not None:
         rp_raw_bytes = rp_audio.getvalue() if hasattr(rp_audio, "getvalue") else rp_audio.read()
@@ -594,14 +618,17 @@ with tab_roleplay:
             rp_hash = hashlib.md5(rp_raw_bytes).hexdigest()
             if rp_hash != st.session_state.last_processed_rp_audio_hash:
                 st.session_state.last_processed_rp_audio_hash = rp_hash
-                with st.spinner(f"🎙️ Transcribing your argument & generating {opponent_label}'s spoken reply..."):
+                with st.spinner(f"🎙️ Transcribing argument, extracting facts & generating {opponent_label}'s spoken reply..."):
                     rp_res = send_audio_roleplay_message(rp_raw_bytes, filename="roleplay.wav")
                 if not rp_res.get("error"):
+                    if rp_res.get("case_state"):
+                        st.session_state.case_state = rp_res["case_state"]
                     st.session_state.roleplay_history.append({
                         "user": rp_res.get("user_transcription", "(Voice argument)"),
                         "user_audio_bytes": rp_raw_bytes,
                         "counterparty_reply": rp_res.get("counterparty_reply", ""),
                         "coach_tip": rp_res.get("coach_tip", ""),
+                        "suggested_argument": rp_res.get("suggested_argument", ""),
                         "audio_base64": rp_res.get("audio_base64")
                     })
                     st.session_state.rp_recorder_counter += 1
@@ -609,16 +636,22 @@ with tab_roleplay:
                 else:
                     st.error(rp_res.get("counterparty_reply", "Voice error"))
 
-    rp_input = st.chat_input(f"Or type what you will say to the {opponent_label}...", key="roleplay_chat_input")
-    if rp_input:
-        with st.spinner(f"🗣️ Simulating {opponent_label}'s spoken response & generating coaching tip..."):
-            rp_res = send_roleplay_message(rp_input)
+    preset_rp = st.session_state.pop("preset_rp_input", "")
+    rp_text_input = st.chat_input(f"Or type what you will say to the {opponent_label}...", key="roleplay_chat_input")
+    active_rp_text = rp_text_input or preset_rp
+    if active_rp_text:
+        with st.spinner(f"🗣️ Extracting facts & simulating {opponent_label}'s spoken response..."):
+            rp_res = send_roleplay_message(active_rp_text)
+        if rp_res.get("case_state"):
+            st.session_state.case_state = rp_res["case_state"]
         st.session_state.roleplay_history.append({
-            "user": rp_input,
+            "user": active_rp_text,
             "counterparty_reply": rp_res.get("counterparty_reply", ""),
             "coach_tip": rp_res.get("coach_tip", ""),
+            "suggested_argument": rp_res.get("suggested_argument", ""),
             "audio_base64": rp_res.get("audio_base64")
         })
         st.rerun()
+
 
 

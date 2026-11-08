@@ -210,28 +210,51 @@ def generate_roleplay_response(
     domain: str,
     facts: Dict[str, Any],
     user_argument: str,
-    language_code: Optional[str] = None
+    language_code: Optional[str] = None,
+    missing_fields: Optional[List[str]] = None
 ) -> Dict[str, str]:
     """
     Implements Problem 2 Direction #4: 'Help them argue, for example by playing the other side so they can practise'.
-    Simulates the stubborn Landlord or Employer HR pushing back, paired with a Tactical Legal Coach tip.
+    Dynamically adapts to both pre-populated cases AND brand-new cases started directly inside the Roleplay tab:
+    - Uses already-extracted facts in the counterparty pushback and suggested response.
+    - If facts are missing, the counterparty challenges the user on those exact missing facts so they get captured naturally!
     """
     kb = get_kb(domain)
     target_lang = LANG_NAMES.get(language_code, "Hinglish / the user's language")
     counterparty_role = "Stubborn Landlord (Makaan-Maalik)" if domain == "rental_deposit" else "Defensive Company HR / Management"
     
-    system_prompt = f"""You are running a Legal Negotiation Roleplay Simulator for an ordinary citizen in India.
+    if missing_fields is None:
+        missing_fields = check_missing_variables(domain, facts)
+    primary_missing = missing_fields[:2]
+    missing_descriptions = [
+        f"{f} ({kb['required_entities'][f]['description']})"
+        for f in primary_missing if kb and f in kb["required_entities"]
+    ]
+
+    missing_guidance = (
+        f"CRITICAL FACT-CAPTURE GOAL: We still need to capture these missing case facts from the user: {', '.join(missing_descriptions)}. "
+        f"Make the {counterparty_role} naturally challenge or question the user about {', '.join(primary_missing)} in character (e.g., questioning the exact amount, date, property/company name, or proof), "
+        f"and make the Coach Tip + Suggested Argument explicitly guide the user to state {', '.join(primary_missing)} in their next reply!"
+        if primary_missing else
+        "All 8 case facts are already verified! Make the counterparty push back on the dispute merits (or start conceding if the user cites Section 73 Contract Act / Order 37 CPC)."
+    )
+
+    system_prompt = f"""You are running an Interactive Legal Negotiation & Fact-Capture Roleplay Simulator for an ordinary citizen in India.
 Case Domain: {kb['domain_name'] if kb else domain}
-Extracted Case Facts: {json.dumps(facts, ensure_ascii=False)}
-Permissible Legal Grounds: {json.dumps(kb['permissible_statutes'] if kb else [], ensure_ascii=False)}
+Currently Captured Facts: {json.dumps(facts, ensure_ascii=False)}
+Missing Facts Still Needed: {json.dumps(primary_missing, ensure_ascii=False)}
+Permissible Legal Statutes: {json.dumps(kb['permissible_statutes'] if kb else [], ensure_ascii=False)}
 
-The user is practicing how to argue their case against the {counterparty_role}.
-User's statement to the counterparty: "{user_argument}"
+The user is arguing their case against the {counterparty_role}.
+User's latest argument: "{user_argument}"
 
-Respond STRICTLY in valid JSON with two keys:
+{missing_guidance}
+
+Respond STRICTLY in valid JSON with three keys in natural conversational {target_lang} (Indic + English loanwords):
 {{
-  "counterparty_reply": "In-character response from the {counterparty_role} in natural {target_lang} (1-2 realistic sentences pushing back with common excuses like 'paint kharab tha', 'agreement nahi hai', or 'client payment nahi aaya', or conceding if the user made a strong legal argument).",
-  "coach_tip": "Tactical coaching feedback from NyayaMitra in {target_lang} (1-2 sentences rating the user's argument and telling them which exact fact or law—such as Section 73 Contract Act, normal wear & tear rule, or 15-day Legal Notice consequence—to use next)."
+  "counterparty_reply": "In-character response from the {counterparty_role} in {target_lang} (1-2 realistic sentences pushing back AND, if facts are missing, challenging the user on {', '.join(primary_missing) if primary_missing else 'their legal claim'} so they state those facts next).",
+  "coach_tip": "Tactical coaching feedback from NyayaMitra in {target_lang} (1-2 sentences rating their argument, noting what facts are captured vs. still needed [{', '.join(primary_missing) if primary_missing else 'All facts complete!'}], and which statute like Section 73 Contract Act or Order 37 CPC to cite).",
+  "suggested_argument": "A strong, ready-to-speak next argument in first-person ('Main...') in {target_lang} that weaves in the user's captured facts ({json.dumps(facts, ensure_ascii=False)}), fills in or states {', '.join(primary_missing) if primary_missing else 'the 15-day Legal Notice ultimatum'}, and cites the relevant law."
 }}"""
 
     try:
@@ -246,17 +269,21 @@ Respond STRICTLY in valid JSON with two keys:
             data = json.loads(json_str)
             return {
                 "counterparty_reply": data.get("counterparty_reply", "Main abhi paise wapas nahi kar sakta."),
-                "coach_tip": data.get("coach_tip", "Unhe yaad dilayein ki Section 73 Indian Contract Act ke tehat bina pakke bill ke paise rokna kanoonan galat hai.")
+                "coach_tip": data.get("coach_tip", "Unhe yaad dilayein ki Section 73 Indian Contract Act ke tehat bina pakke bill ke paise rokna kanoonan galat hai."),
+                "suggested_argument": data.get("suggested_argument", "")
             }
     except Exception as e:
         print(f"Roleplay error: {e}")
 
     if domain == "rental_deposit":
         return {
-            "counterparty_reply": "Dekho bhai, flat me painting aur cleaning ka kharcha toh katega hi, bina kaate deposit wapas nahi milega.",
-            "coach_tip": "💡 **Coach Tip:** Landlord ko spasht bolein ki *normal wear and tear* tenant ki zimmedari nahi hoti, aur bina contractor bill ke deduction Section 73 Contract Act ke khilaf hai."
+            "counterparty_reply": "Dekho bhai, flat me painting aur cleaning ka kharcha toh katega hi, aur tumhare paas kya saboot hai ki kitna deposit diya tha?",
+            "coach_tip": "Landlord ko apna exact deposit amount, flat address, aur proof batayein, aur bolein ki *normal wear and tear* Section 73 Contract Act ke tehat nahi kat sakta.",
+            "suggested_argument": "Maine aapko bank transfer se poora deposit diya tha aur flat saaf halat me khali kiya hai. Section 73 Indian Contract Act ke mutabiq bina pakke bill ke aap paisa nahi kaat sakte!"
         }
     return {
         "counterparty_reply": "Dekhiye, abhi company ke paas client se funds nahi aaye hain, isliye aapka FnF settlement hold par hai.",
-        "coach_tip": "💡 **Coach Tip:** HR ko bolein ki *client payment delay* ka bahana banakar earned salary rokna illegal hai, aur 15 din me payment na hone par aap Order 37 CPC aur Labour Commissioner me jayenge."
+        "coach_tip": "HR ko apna exact pending salary amount, mahine, aur designation batayein, aur bolein ki *client payment delay* ka bahana banakar earned salary rokna illegal hai.",
+        "suggested_argument": "Client payment delay company ka business risk hai. Payment of Wages Act aur Section 73 Contract Act ke mutabiq meri earned salary 15 din me clear kijiye warna main Order 37 CPC me recovery suit file karunga."
     }
+

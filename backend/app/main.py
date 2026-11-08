@@ -233,13 +233,62 @@ def process_roleplay_turn(
     user_argument: str,
     language_code: Optional[str] = None,
     include_audio: bool = True
-) -> Dict[str, Optional[str]]:
-    """Runs a single turn of the counterparty negotiation practice simulator (with optional TTS voice reply)."""
+) -> Dict[str, Any]:
+    """
+    Runs a single turn of the counterparty negotiation practice simulator while
+    simultaneously running Triage, Fact Extraction, Missing Variable Audit, and
+    Legal Notice Assembly so users can start a brand-new case directly inside Roleplay!
+    """
+    save_chat_message(session_id=session_id, role="user", content=f"[Roleplay Argument] {user_argument}")
+
     state = get_case_state(session_id)
-    domain = state.get("domain", "rental_deposit") if state else "rental_deposit"
-    if domain not in ("rental_deposit", "unpaid_salary"):
-        domain = "rental_deposit"
-    facts = state.get("facts", {}) if state else {}
+    history = get_chat_history(session_id, limit=5)
+    current_domain = state.get("domain", "unknown") if state else "unknown"
+    current_facts = state.get("facts", {}) if state else {}
+
+    # 1. Safety Guardrail Check
+    mid_turn_safety = check_deterministic_escalation(user_argument)
+    if mid_turn_safety and mid_turn_safety.is_escalation:
+        esc = _build_escalation_payload(session_id, current_facts, mid_turn_safety.escalation_reason)
+        return {
+            "counterparty_reply": esc["reply"],
+            "coach_tip": "⚠️ Criminal / Domestic Violence matter detected. Civil negotiation halted.",
+            "suggested_argument": "",
+            "case_state": esc
+        }
+
+    # 2. If domain is unknown (or out_of_scope), classify intent from the user's argument!
+    if current_domain in ("unknown", "out_of_scope", "", None):
+        triage = classify_user_intent(user_argument)
+        if triage.domain == "out_of_scope" or triage.is_escalation:
+            esc = _build_escalation_payload(session_id, current_facts, triage.escalation_reason)
+            return {
+                "counterparty_reply": esc["reply"],
+                "coach_tip": "⚠️ Out of scope matter detected. Please contact NALSA 15100.",
+                "suggested_argument": "",
+                "case_state": esc
+            }
+        current_domain = triage.domain
+
+    # 3. Extract new facts mentioned during the argument and audit missing fields
+    updated_facts = extract_facts(
+        domain=current_domain,
+        new_message=user_argument,
+        current_facts=current_facts,
+        recent_history=history
+    )
+    missing_vars = check_missing_variables(current_domain, updated_facts)
+    is_complete = len(missing_vars) == 0
+    legal_draft = assemble_legal_notice(current_domain, updated_facts) if is_complete else None
+
+    upsert_case_state(
+        session_id=session_id,
+        domain=current_domain,
+        facts=updated_facts,
+        is_complete=is_complete,
+        escalation_triggered=False,
+        escalation_reason=None
+    )
 
     lang = language_code
     if not lang:
@@ -250,12 +299,27 @@ def process_roleplay_turn(
         else:
             lang = "hi-IN"
 
-    rp_res = generate_roleplay_response(domain=domain, facts=facts, user_argument=user_argument, language_code=lang)
+    rp_res = generate_roleplay_response(
+        domain=current_domain,
+        facts=updated_facts,
+        user_argument=user_argument,
+        language_code=lang,
+        missing_fields=missing_vars
+    )
     if include_audio and rp_res.get("counterparty_reply"):
         rp_res["audio_base64"] = generate_voice_response(
             text=rp_res["counterparty_reply"],
             language_code=lang if lang != "unknown" else "hi-IN"
         )
+
+    rp_res["case_state"] = {
+        "domain": current_domain,
+        "facts": updated_facts,
+        "is_complete": is_complete,
+        "missing_variables": missing_vars,
+        "escalation_triggered": False,
+        "legal_notice_draft": legal_draft
+    }
     return rp_res
 
 
