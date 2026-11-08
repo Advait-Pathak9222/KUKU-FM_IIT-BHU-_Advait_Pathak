@@ -405,10 +405,12 @@ if st.session_state.case_state.get("is_complete") and st.session_state.case_stat
 
         if not pdf_bytes and st.session_state.case_state.get("legal_notice_draft"):
             try:
-                from backend.app.services.pdf_generator import generate_legal_notice_pdf
-                pdf_bytes = generate_legal_notice_pdf(st.session_state.case_state["legal_notice_draft"])
-            except Exception:
-                pass
+                import importlib
+                import backend.app.services.pdf_generator as _pdf_mod
+                importlib.reload(_pdf_mod)
+                pdf_bytes = _pdf_mod.generate_legal_notice_pdf(st.session_state.case_state["legal_notice_draft"])
+            except Exception as e:
+                st.caption(f"PDF error: {e}")
 
         if pdf_bytes:
             st.download_button(

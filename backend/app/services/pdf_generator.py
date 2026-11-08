@@ -101,7 +101,7 @@ def generate_legal_notice_pdf(notice_text: str, title: str = "Legal Notice") -> 
             pdf.set_font("Helvetica", "", 10)
         elif line.startswith("---"):
             y = pdf.get_y() + 2
-            pdf.line(pdf.l_margin, y, pdf.w - self.r_margin, y)
+            pdf.line(pdf.l_margin, y, pdf.w - pdf.r_margin, y)
             pdf.ln(4)
         else:
             # Regular paragraph with bold stripping
