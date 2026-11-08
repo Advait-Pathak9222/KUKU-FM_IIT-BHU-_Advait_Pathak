@@ -1,0 +1,159 @@
+{
+  "test_case_metadata": {
+    "id": "TC_11_MONEY_RECOVERY_CHEQUE_BOUNCE",
+    "name": "Money Recovery - Dishonoured Cheque & Friendly Business Loan (NI Act Sec 138)",
+    "category": "money_recovery",
+    "input_type": "text",
+    "language": "English/Hinglish",
+    "user_message": "My name is Siddharth Jain from Jaipur. I gave a friendly business loan of Rs. 3,50,000 via NEFT to Manish Agarwal on 1st May. For repayment, he gave me HDFC Bank Cheque No. 445566 dated 10th October for Rs. 3,50,000, which bounced due to 'Insufficient Funds' as per bank return memo dated 12th October. I have the NEFT receipt, original dishonoured cheque, and bank return memo.",
+    "expected_triage": "money_recovery",
+    "expected_is_complete": true,
+    "intent": "Tests Money Recovery & Cheque Dishonour domain triage, Section 138/139 NI Act & Order 37 CPC summary suit doctrinal analysis, and statutory 15-day demand notice drafting."
+  },
+  "conversation_history": [
+    {
+      "turn": 1,
+      "role": "user",
+      "content": "My name is Siddharth Jain from Jaipur. I gave a friendly business loan of Rs. 3,50,000 via NEFT to Manish Agarwal on 1st May. For repayment, he gave me HDFC Bank Cheque No. 445566 dated 10th October for Rs. 3,50,000, which bounced due to 'Insufficient Funds' as per bank return memo dated 12th October. I have the NEFT receipt, original dishonoured cheque, and bank return memo."
+    },
+    {
+      "turn": 1,
+      "role": "assistant",
+      "content": "Siddharth ji, aapki position bahut mazboot hai. *Rangappa vs. Sri Mohan (2010)* mein Supreme Court ne clear kiya hai ki Section 139 NI Act ke tehet, bank return memo ke saath original cheque aur NEFT receipt hone par legally enforceable debt ki statutory presumption banti hai. Aapko 12th October 2024 se 30 din ke andar Section 138 NI Act ke tahat legal notice bhejna mandatory hai, jisme 15 din ka cure period dena hoga. Iske baad aap JMFC mein criminal complaint aur principal amount ke saath interest ke liye Order 37 CPC ke tahat fast-track summary suit bhi file kar sakte hain. Maine aapke liye ek formal Legal Notice of Demand taiyaar kar diya hai, jise aap RPAD, Speed Post, Email ya WhatsApp ke zariye Section 27 General Clauses Act ke tehet bhej sakte hain — aap upar Legal Notice panel se ise download kar lein.",
+      "state_snapshot": {
+        "session_id": "eval_tc_11_money_recovery_cheque_bounce",
+        "domain": "money_recovery",
+        "reply": "Siddharth ji, aapki position bahut mazboot hai. *Rangappa vs. Sri Mohan (2010)* mein Supreme Court ne clear kiya hai ki Section 139 NI Act ke tehet, bank return memo ke saath original cheque aur NEFT receipt hone par legally enforceable debt ki statutory presumption banti hai. Aapko 12th October 2024 se 30 din ke andar Section 138 NI Act ke tahat legal notice bhejna mandatory hai, jisme 15 din ka cure period dena hoga. Iske baad aap JMFC mein criminal complaint aur principal amount ke saath interest ke liye Order 37 CPC ke tahat fast-track summary suit bhi file kar sakte hain. Maine aapke liye ek formal Legal Notice of Demand taiyaar kar diya hai, jise aap RPAD, Speed Post, Email ya WhatsApp ke zariye Section 27 General Clauses Act ke tehet bhej sakte hain — aap upar Legal Notice panel se ise download kar lein.",
+        "is_complete": true,
+        "escalation_triggered": false,
+        "escalation_reason": null,
+        "missing_variables": [],
+        "facts": {
+          "creditor_name": "Siddharth Jain",
+          "debtor_name": "Manish Agarwal",
+          "jurisdiction_city": "Jaipur",
+          "transaction_nature": "Friendly business loan",
+          "principal_amount_owed": 350000,
+          "default_timeline": "12th October (Cheque bounce date)",
+          "default_reason_or_excuse": "Insufficient Funds",
+          "proof_status": "bounced_cheque_and_memo",
+          "_doctrinal_analysis": "Substantive Doctrine: Under Section 139 NI Act, the dishonour of cheque No. 445566 creates a statutory presumption of legally enforceable debt; under Section 70 ICA, Manish Agarwal is estopped from denying the underlying loan benefit. Forum & Limitation: Territorial jurisdiction lies in Jaipur (where the cheque was presumably presented/bounced or where the creditor resides); the 30-day legal notice window under Section 138 NI Act is strictly triggered from 12th October 2024, with a 15-day cure period thereafter. Evidentiary Strategy: The NEFT receipt, original cheque, and bank return memo constitute primary documentary evidence; a Section 63 BSA certificate will be required to admit the electronic NEFT record and any associated WhatsApp/email correspondence into evidence.",
+          "_case_nuances": "Loan disbursed via NEFT on 1st May; cheque dated 10th October for Rs. 3,50,000 dishonoured on 12th October with memo 'Insufficient Funds'; creditor retains NEFT receipt, original cheque, and bank return memo; no partial payments or additional interest claimed yet; no mention of MSME registration or written contract.",
+          "_precedent_search": {
+            "triggered": true,
+            "just_searched_this_turn": true,
+            "searched_on_complete": true,
+            "severity_score": 0.9,
+            "threshold": 0.6,
+            "is_severe": true,
+            "reasons": [
+              "High monetary stakes (₹350,000 ≥ ₹1,50,000)",
+              "Statutory negotiable instrument (Sec 138 NI Act) or commercial default",
+              "All core case facts verified — ready for precedent-backed Legal Notice"
+            ],
+            "search_query": "\"section 138\" \"dishonour of cheque\" \"presumption\" doctypes:judgments",
+            "precedents": [
+              {
+                "title": "Rangappa vs. Sri Mohan (2010) 11 SCC 441",
+                "court": "Supreme Court of India (3-Judge Bench)",
+                "url": "https://indiankanoon.org/doc/1522881/",
+                "snippet": "Once execution/signature on a dishonoured cheque is admitted, Section 139 of the Negotiable Instruments Act mandates a statutory presumption that the cheque was issued for a legally enforceable debt or liability.",
+                "source_type": "Landmark SC Precedent"
+              },
+              {
+                "title": "IDBI Trusteeship Services Ltd. vs. Hubtown Ltd. (2017) 1 SCC 568",
+                "court": "Supreme Court of India",
+                "url": "https://indiankanoon.org/doc/194025464/",
+                "snippet": "In a Summary Suit under Order XXXVII of the CPC, where the debt is backed by written contract, invoice, or acknowledged liability, the defendant must deposit security or show substantial defense to obtain leave to defend.",
+                "source_type": "Landmark SC Precedent"
+              },
+              {
+                "title": "Smt. N. Sukanya Devi vs Smt. Sheela @ Sheela Suresh on 18 March, 2015",
+                "court": "Bangalore District Court",
+                "url": "https://indiankanoon.org/doc/199167464/",
+                "snippet": "Sec. 138- Sec. 269- Dishonour of cheque- Appeal against Acquittal- benefit of doubt- Cheque issued in discharge of debt- Presumption gets dislodged because of testimony ... Sec. 138 & 139- Dishonour of cheque- presumption under execution of...",
+                "source_type": "Live IndianKanoon Web Search"
+              },
+              {
+                "title": "Mr K M Ganesh @ Ganesh Singh vs Mr B S Ananth on 27 February, 2020",
+                "court": "Karnataka High Court",
+                "url": "https://indiankanoon.org/doc/70185071/",
+                "snippet": "Section 138 and 139 of the N.I.Act. It is held that \" Section 138 , Section 139 - Dishonour of cheque - Rule of presumption ... note - B, it is held that \" Section 118 , Section 138 , Section 139 - Dishonour of cheque - Presumption in favou...",
+                "source_type": "Live IndianKanoon Web Search"
+              }
+            ],
+            "precedent_synthesis": "As held in *Rangappa vs. Sri Mohan (2010)*, the dishonour of the cheque and bank return memo trigger a statutory presumption under Section 139 of the Negotiable Instruments Act that the instrument was issued to discharge a legally enforceable liability, which the creditor can readily establish through the retained NEFT receipt and original cheque. Furthermore, the Supreme Court’s guidance in *IDBI Trusteeship Services Ltd. vs. Hubtown Ltd. (2017)* on summary suits underscores the strength of the creditor's documentary evidence, thereby reinforcing the legal notice's demand for immediate payment or security."
+          }
+        },
+        "legal_notice_draft": "**WITHOUT PREJUDICE**\n\n**FORMAL LEGAL NOTICE OF DEMAND**\n*(Dispatched via Registered Post A.D. / Speed Post / Registered Email / WhatsApp under Section 27 of the General Clauses Act, 1897)*\n\n**Date:** 08 November, 2026\n\n**To:**  \nMr. Manish Agarwal  \n[Last Known Address / Location in Jaipur, Rajasthan]\n\n**From (Claimant / Noticee Sender):**  \nSiddharth Jain  \n[Claimant Address / Location]\n\n**SUBJECT: DEMAND FOR IMMEDIATE PAYMENT OF RS. 3,50,000/- (Rupees THREE LAKH FIFTY THOUSAND ONLY) ALONG WITH INTEREST AT 18% PER ANNUM UNDER SECTION 138, 139 OF THE NI ACT, 1881; SECTION 34 OF THE CPC, 1908; AND SECTION 70 OF THE ICA, 1872**\n\n1. **FACTS OF THE CASE AND TRANSACTIONAL BACKGROUND:**  \n   The undersigned, Mr. Siddharth Jain (hereinafter referred to as the \"Claimant\"), is issuing this legal notice to you, Mr. Manish Agarwal (hereinafter referred to as the \"Noticee\"), in respect of a friendly business loan disbursed by the Claimant to the Noticee. Pursuant to the mutual understanding between the parties, the sum of Rs. 3,50,000/- (Rupees Three Lakh Fifty Thousand Only) was disbursed to the Noticee via NEFT on 1st May, 2024. The Noticee, in discharge of this outstanding liability, issued a cheque bearing Cheque Number 445566 dated 10th October, 2024, drawn on [Name of Bank] for the principal sum of Rs. 3,50,000/-.\n\n2. **DISHONOUR OF CHEQUE AND DEFAULT:**  \n   The said cheque was presented for encashment on or about 12th October, 2024. However, the cheque was returned by the drawee bank to the presenting bank on the very same date with the official memo reading **\"Insufficient Funds\"**. Consequently, the Noticee failed and neglected to honour the said cheque, thereby committing a clear statutory default. \n\n3. **EVIDENTIARY BASIS AND DOCUMENTARY RECORD:**  \n   The Claimant is in possession of the original dishonoured cheque bearing No. 445566, the official Bank Return Memo evidencing the \"Insufficient Funds\" remark, and the NEFT receipt confirming the original disbursement of Rs. 3,50,000/- on 1st May, 2024. All digital/electronic records, including the NEFT transaction record, WhatsApp/email correspondence, and any related UPI/bank statements, have been duly preserved by the Claimant for production before the competent judicial forum. These electronic records shall be formally admitted into evidence upon the execution and filing of a **Section 63 Certificate under the Bharatiya Sakshya Adhiniyam, 2023**.\n\n4. **SUBSTANTIVE DOCTRINE AND STATUTORY PRESUMPTION:**  \n   Under **Section 139 of the Negotiable Instruments Act, 1881 (NI Act)**, the dishonour of Cheque No. 445566 creates a statutory presumption that the cheque was issued for the discharge of a legally enforceable debt or liability. The Noticee is further estopped from denying the underlying benefit of the said loan, having accepted the funds, under **Section 70 of the Indian Contract Act, 1872 (Obligation of a person enjoying the benefit of a non-gratuitous act)**. As held by the Supreme Court of India in *Rangappa vs. Sri Mohan (2010) 11 SCC 441*, once execution/signature on a dishonoured cheque is admitted, Section 139 of the NI Act mandates a statutory presumption that the cheque was issued for a legally enforceable debt. \n\n5. **TIMELINE, LIMITATION, AND STATUTORY REMEDIES INVOKED:**  \n   The 30-day legal notice window under **Section 138 and Section 142 of the NI Act, 1881** is strictly triggered from the date of the Bank Return Memo, i.e., 12th October, 2024. The present notice is being dispatched well within this statutory mandate. Furthermore, the cause of action for the present civil money recovery attracts a limitation period of 3 years under the **Limitation Act, 1963**. In the event the Noticee fails to discharge the liability, the Claimant reserves the right to initiate summary proceedings under **Order XXXVII of the Code of Civil Procedure, 1908 (CPC)** for the swift recovery of the debt.\n\n6. **FINANCIAL CALCULATION AND CLAIM FOR RELIEF:**  \n   The undisputed principal amount currently owed by the Noticee to the Claimant is **Rs. 3,50,000/- (Rupees Three Lakh Fifty Thousand Only)**. In the event of continued default, the Claimant shall be entitled to claim interest at the rate of **18% per annum** under **Section 34 of the CPC, 1908**, calculated from the date of default (12th October, 2024) until the date of actual realisation. No partial payments have been received to date, and no additional interest or penalty is claimed at this stage, save and except the statutory interest mentioned above.\n\n7. **15-DAY STATUTORY CURE / DEMAND CLAUSE AND CONSEQUENCES OF NON-COMPLIANCE:**  \n   Pursuant to the mandate of **Section 138 of the NI Act, 1881**, you are hereby called upon to pay the principal sum of **Rs. 3,50,000/- (Rupees Three Lakh Fifty Thousand Only)** within **15 (fifteen) days** from the receipt of this notice. Should you fail to remit the said amount within the stipulated 15-day period, the Claimant shall be constrained to initiate appropriate civil recovery proceedings under **Order XXXVII CPC, 1908**, file a criminal complaint under **Section 138 of the NI Act, 1881** before the competent Judicial Magistrate First Class (JMFC) in Jaipur, and/or approach the Micro and Small Enterprises Facilitation Council (MSME Samadhaan), strictly **at your sole risk as to costs and consequences**. Please note that any interim compensation payable under **Section 143A of the NI Act, 1881** shall be at the discretion of the adjudicating authority.\n\n**JURISDICTION:**  \nThe competent territorial jurisdiction to entertain and try any suit, criminal complaint, or summary proceedings arising out of the present cause of action shall lie in the Courts/JMFCs at **Jaipur**, being the place where the cheque was presented/bounced and/or where the Claimant resides.\n\nYou are advised to treat this notice with the utmost urgency and comply with the demand herein to avoid the initiation of stringent legal proceedings against you.\n\nYours faithfully,\n\n**Siddharth Jain**  \nClaimant / Noticee Sender"
+      }
+    }
+  ],
+  "final_case_state": {
+    "session_id": "eval_tc_11_money_recovery_cheque_bounce",
+    "domain": "money_recovery",
+    "reply": "Siddharth ji, aapki position bahut mazboot hai. *Rangappa vs. Sri Mohan (2010)* mein Supreme Court ne clear kiya hai ki Section 139 NI Act ke tehet, bank return memo ke saath original cheque aur NEFT receipt hone par legally enforceable debt ki statutory presumption banti hai. Aapko 12th October 2024 se 30 din ke andar Section 138 NI Act ke tahat legal notice bhejna mandatory hai, jisme 15 din ka cure period dena hoga. Iske baad aap JMFC mein criminal complaint aur principal amount ke saath interest ke liye Order 37 CPC ke tahat fast-track summary suit bhi file kar sakte hain. Maine aapke liye ek formal Legal Notice of Demand taiyaar kar diya hai, jise aap RPAD, Speed Post, Email ya WhatsApp ke zariye Section 27 General Clauses Act ke tehet bhej sakte hain — aap upar Legal Notice panel se ise download kar lein.",
+    "is_complete": true,
+    "escalation_triggered": false,
+    "escalation_reason": null,
+    "missing_variables": [],
+    "facts": {
+      "creditor_name": "Siddharth Jain",
+      "debtor_name": "Manish Agarwal",
+      "jurisdiction_city": "Jaipur",
+      "transaction_nature": "Friendly business loan",
+      "principal_amount_owed": 350000,
+      "default_timeline": "12th October (Cheque bounce date)",
+      "default_reason_or_excuse": "Insufficient Funds",
+      "proof_status": "bounced_cheque_and_memo",
+      "_doctrinal_analysis": "Substantive Doctrine: Under Section 139 NI Act, the dishonour of cheque No. 445566 creates a statutory presumption of legally enforceable debt; under Section 70 ICA, Manish Agarwal is estopped from denying the underlying loan benefit. Forum & Limitation: Territorial jurisdiction lies in Jaipur (where the cheque was presumably presented/bounced or where the creditor resides); the 30-day legal notice window under Section 138 NI Act is strictly triggered from 12th October 2024, with a 15-day cure period thereafter. Evidentiary Strategy: The NEFT receipt, original cheque, and bank return memo constitute primary documentary evidence; a Section 63 BSA certificate will be required to admit the electronic NEFT record and any associated WhatsApp/email correspondence into evidence.",
+      "_case_nuances": "Loan disbursed via NEFT on 1st May; cheque dated 10th October for Rs. 3,50,000 dishonoured on 12th October with memo 'Insufficient Funds'; creditor retains NEFT receipt, original cheque, and bank return memo; no partial payments or additional interest claimed yet; no mention of MSME registration or written contract.",
+      "_precedent_search": {
+        "triggered": true,
+        "just_searched_this_turn": true,
+        "searched_on_complete": true,
+        "severity_score": 0.9,
+        "threshold": 0.6,
+        "is_severe": true,
+        "reasons": [
+          "High monetary stakes (₹350,000 ≥ ₹1,50,000)",
+          "Statutory negotiable instrument (Sec 138 NI Act) or commercial default",
+          "All core case facts verified — ready for precedent-backed Legal Notice"
+        ],
+        "search_query": "\"section 138\" \"dishonour of cheque\" \"presumption\" doctypes:judgments",
+        "precedents": [
+          {
+            "title": "Rangappa vs. Sri Mohan (2010) 11 SCC 441",
+            "court": "Supreme Court of India (3-Judge Bench)",
+            "url": "https://indiankanoon.org/doc/1522881/",
+            "snippet": "Once execution/signature on a dishonoured cheque is admitted, Section 139 of the Negotiable Instruments Act mandates a statutory presumption that the cheque was issued for a legally enforceable debt or liability.",
+            "source_type": "Landmark SC Precedent"
+          },
+          {
+            "title": "IDBI Trusteeship Services Ltd. vs. Hubtown Ltd. (2017) 1 SCC 568",
+            "court": "Supreme Court of India",
+            "url": "https://indiankanoon.org/doc/194025464/",
+            "snippet": "In a Summary Suit under Order XXXVII of the CPC, where the debt is backed by written contract, invoice, or acknowledged liability, the defendant must deposit security or show substantial defense to obtain leave to defend.",
+            "source_type": "Landmark SC Precedent"
+          },
+          {
+            "title": "Smt. N. Sukanya Devi vs Smt. Sheela @ Sheela Suresh on 18 March, 2015",
+            "court": "Bangalore District Court",
+            "url": "https://indiankanoon.org/doc/199167464/",
+            "snippet": "Sec. 138- Sec. 269- Dishonour of cheque- Appeal against Acquittal- benefit of doubt- Cheque issued in discharge of debt- Presumption gets dislodged because of testimony ... Sec. 138 & 139- Dishonour of cheque- presumption under execution of...",
+            "source_type": "Live IndianKanoon Web Search"
+          },
+          {
+            "title": "Mr K M Ganesh @ Ganesh Singh vs Mr B S Ananth on 27 February, 2020",
+            "court": "Karnataka High Court",
+            "url": "https://indiankanoon.org/doc/70185071/",
+            "snippet": "Section 138 and 139 of the N.I.Act. It is held that \" Section 138 , Section 139 - Dishonour of cheque - Rule of presumption ... note - B, it is held that \" Section 118 , Section 138 , Section 139 - Dishonour of cheque - Presumption in favou...",
+            "source_type": "Live IndianKanoon Web Search"
+          }
+        ],
+        "precedent_synthesis": "As held in *Rangappa vs. Sri Mohan (2010)*, the dishonour of the cheque and bank return memo trigger a statutory presumption under Section 139 of the Negotiable Instruments Act that the instrument was issued to discharge a legally enforceable liability, which the creditor can readily establish through the retained NEFT receipt and original cheque. Furthermore, the Supreme Court’s guidance in *IDBI Trusteeship Services Ltd. vs. Hubtown Ltd. (2017)* on summary suits underscores the strength of the creditor's documentary evidence, thereby reinforcing the legal notice's demand for immediate payment or security."
+      }
+    },
+    "legal_notice_draft": "**WITHOUT PREJUDICE**\n\n**FORMAL LEGAL NOTICE OF DEMAND**\n*(Dispatched via Registered Post A.D. / Speed Post / Registered Email / WhatsApp under Section 27 of the General Clauses Act, 1897)*\n\n**Date:** 08 November, 2026\n\n**To:**  \nMr. Manish Agarwal  \n[Last Known Address / Location in Jaipur, Rajasthan]\n\n**From (Claimant / Noticee Sender):**  \nSiddharth Jain  \n[Claimant Address / Location]\n\n**SUBJECT: DEMAND FOR IMMEDIATE PAYMENT OF RS. 3,50,000/- (Rupees THREE LAKH FIFTY THOUSAND ONLY) ALONG WITH INTEREST AT 18% PER ANNUM UNDER SECTION 138, 139 OF THE NI ACT, 1881; SECTION 34 OF THE CPC, 1908; AND SECTION 70 OF THE ICA, 1872**\n\n1. **FACTS OF THE CASE AND TRANSACTIONAL BACKGROUND:**  \n   The undersigned, Mr. Siddharth Jain (hereinafter referred to as the \"Claimant\"), is issuing this legal notice to you, Mr. Manish Agarwal (hereinafter referred to as the \"Noticee\"), in respect of a friendly business loan disbursed by the Claimant to the Noticee. Pursuant to the mutual understanding between the parties, the sum of Rs. 3,50,000/- (Rupees Three Lakh Fifty Thousand Only) was disbursed to the Noticee via NEFT on 1st May, 2024. The Noticee, in discharge of this outstanding liability, issued a cheque bearing Cheque Number 445566 dated 10th October, 2024, drawn on [Name of Bank] for the principal sum of Rs. 3,50,000/-.\n\n2. **DISHONOUR OF CHEQUE AND DEFAULT:**  \n   The said cheque was presented for encashment on or about 12th October, 2024. However, the cheque was returned by the drawee bank to the presenting bank on the very same date with the official memo reading **\"Insufficient Funds\"**. Consequently, the Noticee failed and neglected to honour the said cheque, thereby committing a clear statutory default. \n\n3. **EVIDENTIARY BASIS AND DOCUMENTARY RECORD:**  \n   The Claimant is in possession of the original dishonoured cheque bearing No. 445566, the official Bank Return Memo evidencing the \"Insufficient Funds\" remark, and the NEFT receipt confirming the original disbursement of Rs. 3,50,000/- on 1st May, 2024. All digital/electronic records, including the NEFT transaction record, WhatsApp/email correspondence, and any related UPI/bank statements, have been duly preserved by the Claimant for production before the competent judicial forum. These electronic records shall be formally admitted into evidence upon the execution and filing of a **Section 63 Certificate under the Bharatiya Sakshya Adhiniyam, 2023**.\n\n4. **SUBSTANTIVE DOCTRINE AND STATUTORY PRESUMPTION:**  \n   Under **Section 139 of the Negotiable Instruments Act, 1881 (NI Act)**, the dishonour of Cheque No. 445566 creates a statutory presumption that the cheque was issued for the discharge of a legally enforceable debt or liability. The Noticee is further estopped from denying the underlying benefit of the said loan, having accepted the funds, under **Section 70 of the Indian Contract Act, 1872 (Obligation of a person enjoying the benefit of a non-gratuitous act)**. As held by the Supreme Court of India in *Rangappa vs. Sri Mohan (2010) 11 SCC 441*, once execution/signature on a dishonoured cheque is admitted, Section 139 of the NI Act mandates a statutory presumption that the cheque was issued for a legally enforceable debt. \n\n5. **TIMELINE, LIMITATION, AND STATUTORY REMEDIES INVOKED:**  \n   The 30-day legal notice window under **Section 138 and Section 142 of the NI Act, 1881** is strictly triggered from the date of the Bank Return Memo, i.e., 12th October, 2024. The present notice is being dispatched well within this statutory mandate. Furthermore, the cause of action for the present civil money recovery attracts a limitation period of 3 years under the **Limitation Act, 1963**. In the event the Noticee fails to discharge the liability, the Claimant reserves the right to initiate summary proceedings under **Order XXXVII of the Code of Civil Procedure, 1908 (CPC)** for the swift recovery of the debt.\n\n6. **FINANCIAL CALCULATION AND CLAIM FOR RELIEF:**  \n   The undisputed principal amount currently owed by the Noticee to the Claimant is **Rs. 3,50,000/- (Rupees Three Lakh Fifty Thousand Only)**. In the event of continued default, the Claimant shall be entitled to claim interest at the rate of **18% per annum** under **Section 34 of the CPC, 1908**, calculated from the date of default (12th October, 2024) until the date of actual realisation. No partial payments have been received to date, and no additional interest or penalty is claimed at this stage, save and except the statutory interest mentioned above.\n\n7. **15-DAY STATUTORY CURE / DEMAND CLAUSE AND CONSEQUENCES OF NON-COMPLIANCE:**  \n   Pursuant to the mandate of **Section 138 of the NI Act, 1881**, you are hereby called upon to pay the principal sum of **Rs. 3,50,000/- (Rupees Three Lakh Fifty Thousand Only)** within **15 (fifteen) days** from the receipt of this notice. Should you fail to remit the said amount within the stipulated 15-day period, the Claimant shall be constrained to initiate appropriate civil recovery proceedings under **Order XXXVII CPC, 1908**, file a criminal complaint under **Section 138 of the NI Act, 1881** before the competent Judicial Magistrate First Class (JMFC) in Jaipur, and/or approach the Micro and Small Enterprises Facilitation Council (MSME Samadhaan), strictly **at your sole risk as to costs and consequences**. Please note that any interim compensation payable under **Section 143A of the NI Act, 1881** shall be at the discretion of the adjudicating authority.\n\n**JURISDICTION:**  \nThe competent territorial jurisdiction to entertain and try any suit, criminal complaint, or summary proceedings arising out of the present cause of action shall lie in the Courts/JMFCs at **Jaipur**, being the place where the cheque was presented/bounced and/or where the Claimant resides.\n\nYou are advised to treat this notice with the utmost urgency and comply with the demand herein to avoid the initiation of stringent legal proceedings against you.\n\nYours faithfully,\n\n**Siddharth Jain**  \nClaimant / Noticee Sender"
+  }
+}

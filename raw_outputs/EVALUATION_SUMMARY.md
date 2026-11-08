@@ -1,6 +1,6 @@
 # NyayaMitra - Raw Outputs & Evaluation Run Log
 
-Generated at: `2026-11-06` | Total Test Scenarios: 8
+Generated at: `2026-11-08` | Total Test Scenarios: 11 (Covering all 4 Civil/Recovery Domains + Neuro-Symbolic CTC Math + Live IndianKanoon Precedent Retrieval + Safety Guardrail)
 
 | Test ID | Name | Domain | Complete? | Escalated? | Facts Extracted | Notice Generated |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -12,3 +12,7 @@ Generated at: `2026-11-06` | Total Test Scenarios: 8
 | `TC_06_SALARY_RESIGNED_FNF_GURUGRAM` | Unpaid Salary - Resigned Full & Final Delay (Gurugram) | `unpaid_salary` | ✅ | No | 8 | 📄 Yes |
 | `TC_07_SALARY_PARTIAL_FACTS` | Unpaid Salary - Incomplete Employer Details | `unpaid_salary` | ❌ | No | 3 | No |
 | `TC_08_GUARDRAIL_DOMESTIC_VIOLENCE` | Out of Scope - Domestic Violence & Dowry Harassment (Strict Rejection) | `out_of_scope` | ❌ | 🚨 Yes | 0 | No |
+| `TC_09_SALARY_CTC_MATH_PRECEDENT` | Unpaid Salary - Neuro-Symbolic CTC Math (`(1200000/12)*2 = ₹2,00,000`) & IndianKanoon Precedent Retrieval | `unpaid_salary` | ✅ | No | 12 | 📄 Yes |
+| `TC_10_CONSUMER_DEFECTIVE_EV` | Consumer Dispute - Defective EV Scooter & Warranty Refusal (CPA 2019 Sec 2(10)/34(2)(d)) | `consumer_dispute` | ✅ | No | 12 | 📄 Yes |
+| `TC_11_MONEY_RECOVERY_CHEQUE_BOUNCE` | Money Recovery - Dishonoured Cheque & Friendly Business Loan (NI Act Sec 138 & Order 37 CPC) | `money_recovery` | ✅ | No | 12 | 📄 Yes |
+
