@@ -174,10 +174,12 @@ def send_text_message(message: str):
         import importlib
         import backend.app.kb as _kb_mod
         import backend.app.services.triage as _tri_mod
+        import backend.app.services.precedent_search as _prec_mod
         import backend.app.services.extractor as _ext_mod
         import backend.app.main as _main_mod
         importlib.reload(_kb_mod)
         importlib.reload(_tri_mod)
+        importlib.reload(_prec_mod)
         importlib.reload(_ext_mod)
         importlib.reload(_main_mod)
         lang = None
@@ -208,10 +210,12 @@ def send_audio_message(audio_bytes: bytes, filename: str = "voice.wav"):
         import importlib
         import backend.app.kb as _kb_mod
         import backend.app.services.triage as _tri_mod
+        import backend.app.services.precedent_search as _prec_mod
         import backend.app.services.extractor as _ext_mod
         import backend.app.main as _main_mod
         importlib.reload(_kb_mod)
         importlib.reload(_tri_mod)
+        importlib.reload(_prec_mod)
         importlib.reload(_ext_mod)
         importlib.reload(_main_mod)
         from backend.app.services.voice_service import transcribe_audio_file, generate_voice_response
@@ -240,10 +244,12 @@ def send_roleplay_message(argument_text: str):
         import importlib
         import backend.app.kb as _kb_mod
         import backend.app.services.triage as _tri_mod
+        import backend.app.services.precedent_search as _prec_mod
         import backend.app.services.extractor as _ext_mod
         import backend.app.main as _main_mod
         importlib.reload(_kb_mod)
         importlib.reload(_tri_mod)
+        importlib.reload(_prec_mod)
         importlib.reload(_ext_mod)
         importlib.reload(_main_mod)
         return _main_mod.process_roleplay_turn(session_id=session_id, user_argument=argument_text, include_audio=True)
@@ -263,10 +269,12 @@ def send_audio_roleplay_message(audio_bytes: bytes, filename: str = "roleplay_vo
         import importlib
         import backend.app.kb as _kb_mod
         import backend.app.services.triage as _tri_mod
+        import backend.app.services.precedent_search as _prec_mod
         import backend.app.services.extractor as _ext_mod
         import backend.app.main as _main_mod
         importlib.reload(_kb_mod)
         importlib.reload(_tri_mod)
+        importlib.reload(_prec_mod)
         importlib.reload(_ext_mod)
         importlib.reload(_main_mod)
         from backend.app.services.voice_service import transcribe_audio_file
@@ -353,6 +361,21 @@ with st.sidebar:
         if facts.get("_case_nuances"):
             st.caption(f"📌 **Case Nuances:** {facts['_case_nuances']}")
 
+    prec_state = facts.get("_precedent_search", {})
+    if prec_state:
+        st.markdown("#### 🌐 Severity & Precedent Search")
+        sev_score = float(prec_state.get("severity_score", 0.0))
+        thresh = float(prec_state.get("threshold", 0.60))
+        st.progress(min(1.0, sev_score), text=f"Case Severity: {sev_score:.2f} / 1.00 (Threshold: {thresh:.2f})")
+        if prec_state.get("triggered"):
+            st.caption(f"🔍 **Web Query:** `{prec_state.get('search_query')}`")
+            for p in prec_state.get("precedents", [])[:4]:
+                st.markdown(
+                    f"- 🏛️ **[{p.get('title')}]({p.get('url')})** *({p.get('court')})* — `{p.get('source_type')}`"
+                )
+        else:
+            st.caption("⚡ Simple/routine turn (< 0.60 threshold) — Web precedent search skipped for speed.")
+
     # Formatted Fact Cards (Clean UI instead of raw JSON)
     st.markdown("#### 📋 Extracted Facts")
     if public_facts:
@@ -425,9 +448,9 @@ st.markdown("""
     <div class="brand-subtitle">Conversational Indic Legal Aid for Everyday Civil Disputes • Powered by Sarvam AI & FastAPI</div>
     <div>
         <span class="pill-badge">🎙️ Saaras Indic STT</span>
-        <span class="pill-badge">🧠 Sarvam-105B Reasoning</span>
+        <span class="pill-badge">🧠 BCI LL.B. Doctrinal & Math Engine</span>
+        <span class="pill-badge">🌐 Calibrated IndianKanoon Web Agent</span>
         <span class="pill-badge">🔊 Bulbul Indic TTS</span>
-        <span class="pill-badge">🛡️ Zero-Hallucination Statute Whitelist</span>
         <span class="pill-badge">🥊 Negotiation Roleplay Coach</span>
     </div>
 </div>
@@ -438,6 +461,21 @@ chat_container = st.container()
 with chat_container:
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
+            p_info = msg.get("precedent_search")
+            if msg["role"] == "assistant" and p_info:
+                s_score = float(p_info.get("severity_score", 0.0))
+                s_thresh = float(p_info.get("threshold", 0.60))
+                if p_info.get("just_searched_this_turn"):
+                    with st.expander(f"🌐 Web Precedent Agent Triggered (Severity {s_score:.2f} ≥ {s_thresh:.2f} Threshold) — Browsed IndianKanoon.org & SC Precedents", expanded=True):
+                        st.markdown(f"**Triggers:** {', '.join(p_info.get('reasons', []))}")
+                        st.markdown(f"**IndianKanoon Live Query:** `{p_info.get('search_query')}`")
+                        for c_idx, c_item in enumerate(p_info.get("precedents", []), 1):
+                            st.markdown(
+                                f"{c_idx}. **[{c_item.get('title')}]({c_item.get('url')})** — *{c_item.get('court')}* (`{c_item.get('source_type')}`)\n"
+                                f"   > {c_item.get('snippet')}"
+                            )
+                elif not p_info.get("triggered"):
+                    st.caption(f"⚡ *Severity Gate: {s_score:.2f} < {s_thresh:.2f} threshold (Routine turn — Web precedent search skipped)*")
             st.markdown(msg["content"])
             # Render audio player cleanly if audio bytes/b64 exists
             if msg.get("audio_bytes"):
@@ -454,7 +492,7 @@ if st.session_state.case_state.get("is_complete") and st.session_state.case_stat
     st.markdown("""
     <div class="notice-preview-box">
         <h3 style="margin-top:0; color:#1E3A8A;">📄 Verified Legal Notice of Demand</h3>
-        <p style="color:#64748B; font-size:0.9rem;">This statutory demand letter has been generated with verified facts and grounded under Section 73 of the Indian Contract Act, 1872.</p>
+        <p style="color:#64748B; font-size:0.9rem;">This statutory demand letter has been generated with verified facts, LL.B. doctrines, and retrieved judicial precedents.</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -537,9 +575,12 @@ with tab_voice:
                     "audio_bytes": raw_audio_bytes
                 })
 
-                # 2. Mask latency with spinner
-                with st.spinner("🎙️ Sarvam Saaras is transcribing speech & extracting facts..."):
+                # 2. Show multi-step agent status including Web Precedent Search calibration
+                with st.status("🎙️ Transcribing speech, running LL.B. Doctrinal Engine & checking Case Severity for Web Precedent Search...", expanded=True) as status_box:
+                    st.write("🔊 Running Sarvam Saaras v3 STT + Neuro-Symbolic Math...")
+                    st.write("🌐 Evaluating Severity Gate (≥ 0.60 triggers live IndianKanoon.org precedent browsing)...")
                     res = send_audio_message(raw_audio_bytes, filename=getattr(audio_val, "name", "recording.wav"))
+                    status_box.update(label="✅ Legal & Precedent Analysis Complete", state="complete")
 
                 # 3. Handle response exactly once
                 if not res.get("error"):
@@ -549,7 +590,8 @@ with tab_voice:
                     st.session_state.messages.append({
                         "role": "assistant",
                         "content": res["reply"],
-                        "audio_b64": res.get("audio_base64")
+                        "audio_b64": res.get("audio_base64"),
+                        "precedent_search": res.get("precedent_search") or res.get("facts", {}).get("_precedent_search")
                     })
 
                     st.session_state.case_state = {
@@ -574,13 +616,17 @@ with tab_text:
     if active_text:
         st.session_state.messages.append({"role": "user", "content": active_text})
         
-        with st.spinner("🧠 NyayaMitra is analyzing legal statutes and extracting facts..."):
+        with st.status("🧠 Analyzing legal doctrines, running Neuro-Symbolic Math & checking Severity Gate for Web Precedent Search...", expanded=True) as status_box:
+            st.write("⚖️ Extracting facts & running BCI LL.B. Doctrinal Diagnostic...")
+            st.write("🌐 Evaluating Case Severity (≥ 0.60 triggers live IndianKanoon.org judgment search)...")
             res = send_text_message(active_text)
+            status_box.update(label="✅ Analysis Complete", state="complete")
             
         if not res.get("error"):
             st.session_state.messages.append({
                 "role": "assistant",
-                "content": res["reply"]
+                "content": res["reply"],
+                "precedent_search": res.get("precedent_search") or res.get("facts", {}).get("_precedent_search")
             })
             st.session_state.case_state = {
                 "domain": res["domain"],

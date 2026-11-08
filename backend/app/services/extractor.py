@@ -308,18 +308,21 @@ def generate_lawyer_turn_response(
     nuances = facts.get("_case_nuances")
     doctrinal_diag = facts.get("_doctrinal_analysis")
     doctrinal_context = get_doctrinal_context(domain)
+    prec_info = facts.get("_precedent_search", {})
+    prec_synthesis = prec_info.get("precedent_synthesis") if prec_info.get("triggered") else None
+    prec_list_str = json.dumps(prec_info.get("precedents", []), ensure_ascii=False) if prec_info.get("triggered") else "None (Simple/routine turn below severity threshold)"
 
     if is_complete:
         task_instruction = f"""CASE INTAKE STATUS: COMPLETE — All essential facts for the Legal Notice are verified!
 Your objectives for this response:
 1. ADDRESS THE CLIENT'S LATEST INPUT & SHOW ANY MATH:
    - If a calculation or breakdown was performed ({active_calc or 'None'}) or if the client asked a specific question, walk through the exact arithmetic and reasoning clearly.
-2. DELIVER LL.B.-GRADE GROUNDED LEGAL STANDING (OR ANSWER FOLLOW-UP WITHOUT REPETITION):
+2. DELIVER LL.B.-GRADE GROUNDED LEGAL STANDING & PRECEDENT SUPPORT (OR ANSWER FOLLOW-UP WITHOUT REPETITION):
    - Check the Conversation Transcript below. If this is the first turn where the case completed, explain their Legal Standing clearly in {target_lang} using the LL.B. Doctrinal Analysis above and ONLY these verified Indian statutes:
      Principles: {kb['grounded_legal_standing']['en']}
      Permissible Statutes: {', '.join(kb['permissible_statutes'])}
-     (Briefly highlight their exact legal doctrine, forum/jurisdiction, limitation window, and how their evidence is protected under Section 63 BSA / Contract Act. Do NOT invent any unverified sections or fake case precedents!)
-   - If you ALREADY explained their Legal Standing in a previous turn and the client is now asking a follow-up question or modifying a detail, answer their specific question directly using the LL.B. Doctrinal Toolkit without repeating your earlier speech!
+   - If Precedent Research was triggered for this severe case ({prec_synthesis or 'None'}), briefly cite the 1 most relevant Supreme Court / High Court precedent from 'Retrieved Court Precedents' to reassure the client! (Do NOT invent any unverified case names!)
+   - If you ALREADY explained their Legal Standing in a previous turn and the client is now asking a follow-up question or modifying a detail, answer their specific question directly without repeating your earlier speech!
 3. {oral_risk_note}
 4. Point the client to their custom-drafted **Formal Legal Notice of Demand** in the Legal Notice panel (ready for PDF download and dispatch via Registered Post A.D. / Speed Post / Official Email / WhatsApp under Section 27 General Clauses Act).
 5. VOICE & UX CONCISENESS: Do NOT paste the raw Legal Notice document inside this chat bubble (the UI renders the formatted Legal Notice document and PDF button automatically). Keep your spoken reply natural, sharp, and 4–6 sentences long."""
@@ -329,7 +332,7 @@ Your objectives for this response:
 1. APPLY LL.B. LEGAL REASONING TO WHAT THE CLIENT JUST SAID (NO CANNED TEMPLATES!):
    - Engage directly with what the client just said in "{user_message}".
    - If you performed any financial calculation or legal deduction analysis ({active_calc or 'None'}), state the exact numbers you computed and why.
-   - If the client raised a doctrinal, procedural, or evidentiary concern (e.g., unregistered agreement, oral contract, employment bond, withheld relieving letter, WhatsApp proof, limitation time, or filing an FIR), answer it authoritatively using the BCI LL.B. Doctrinal Toolkit ({', '.join(kb['permissible_statutes'])}).
+   - If the client raised a doctrinal, procedural, or evidentiary concern, or if live Precedent Research was triggered on this turn ({prec_synthesis or 'None'}), briefly reference the applicable statutory rule and/or retrieved precedent ({', '.join(kb['permissible_statutes'])}).
 2. ZERO REPETITION ACROSS TURNS (CRITICAL):
    - Read the 'Conversation Transcript So Far'.
    - NEVER repeat stock sympathy lines, greetings, or reassurances that you already said in an earlier turn. Speak with natural human continuity.
@@ -345,6 +348,11 @@ BCI LL.B. Doctrinal & Procedural Toolkit:
 
 Case-Specific LL.B. Doctrinal Diagnostic:
 {doctrinal_diag or "Apply the BCI LL.B. Doctrinal Toolkit above."}
+
+Retrieved Court Precedents (Live IndianKanoon & Landmark SC Search):
+{prec_list_str}
+Precedent Application Synthesis:
+{prec_synthesis or "None"}
 
 Conversation Transcript So Far:
 {_format_history(recent_history)}
@@ -410,7 +418,7 @@ def assemble_legal_notice(domain: str, facts: Dict[str, Any]) -> str:
     """
     BCI Clinical Legal Education ('Drafting, Pleading & Conveyancing') Bespoke Legal Notice Draftsman.
     Synthesizes all captured facts, Neuro-Symbolic math breakdowns, LL.B. doctrinal diagnostics,
-    and case nuances into an enforceable Indian Legal Notice grounded strictly in Closed-World Statutes.
+    retrieved court precedents, and case nuances into an enforceable Indian Legal Notice.
     """
     kb = get_kb(domain)
     if not kb:
@@ -426,6 +434,8 @@ def assemble_legal_notice(domain: str, facts: Dict[str, Any]) -> str:
     case_nuances = facts.get("_case_nuances")
     doctrinal_diag = facts.get("_doctrinal_analysis")
     doctrinal_context = get_doctrinal_context(domain)
+    prec_info = facts.get("_precedent_search", {})
+    prec_list = prec_info.get("precedents", []) if prec_info.get("triggered") else []
 
     raw_proof = str(public_facts.get("proof_status", ""))
     readable_proof = PROOF_HUMAN_READABLE.get(raw_proof, raw_proof.replace("_", " "))
@@ -443,13 +453,15 @@ Neuro-Symbolic Financial Calculation Breakdown: {calc_note or "Use the principal
 LL.B. Doctrinal, Forum & Evidentiary Analysis: {doctrinal_diag or "Apply standard domain doctrines"}
 Additional Case-Specific Nuances & Grievances: {case_nuances or "None"}
 
+Retrieved Judicial Precedents (ONLY cite from this list if applicable):
+{json.dumps(prec_list, ensure_ascii=False, indent=2)}
+
 BCI LL.B. Doctrinal Reference for Drafting:
 {doctrinal_context}
 
-CLOSED-WORLD STATUTORY GROUNDING (CRITICAL):
-You may ONLY cite from these verified Indian statutes:
-{json.dumps(kb['permissible_statutes'], indent=2)}
-Do NOT invent any fake case laws, phantom sections, or unrelated Acts!
+CLOSED-WORLD STATUTORY & PRECEDENT GROUNDING (CRITICAL):
+1. You may ONLY cite statutes from: {json.dumps(kb['permissible_statutes'])}
+2. You may ONLY cite judicial precedents from the 'Retrieved Judicial Precedents' list above. Do NOT invent any fake case laws or phantom sections!
 
 DRAFTING, PLEADING & CONVEYANCING (DPC) REQUIREMENTS:
 1. Format the document cleanly in Markdown as a formal Indian Legal Notice:
@@ -461,8 +473,8 @@ DRAFTING, PLEADING & CONVEYANCING (DPC) REQUIREMENTS:
    - `**SUBJECT:**` (Bold, uppercase subject line stating the exact nature of demand, statutory provisions invoked, and exact claim amount in Rs.)
 2. Chronological Numbered Paragraphs (`1.`, `2.`, `3.`, `4.`, `5.`, `6.`, `7.`):
    - Tailor the factual narrative specifically to this client's case!
-   - Explicitly include the exact mathematical calculation breakdown from 'Neuro-Symbolic Financial Calculation Breakdown' and any extra reliefs from 'Additional Case-Specific Nuances' (e.g., Relieving Letter, unvested perk exclusion, arbitrary painting deduction rebuttal, cheque number & return memo, or Order ID).
-   - Invoke the applicable substantive doctrines (e.g., Section 70/73/74 Contract Act, Section 108(m) Transfer of Property Act reasonable wear & tear, Section 2(s)/33C(2) ID Act or Payment of Wages Act, Section 2(7)/2(10)/2(11)/34(2)(d) Consumer Protection Act, or Section 138/139 NI Act).
+   - Explicitly include the exact mathematical calculation breakdown from 'Neuro-Symbolic Financial Calculation Breakdown' and any extra reliefs from 'Additional Case-Specific Nuances'.
+   - Invoke the applicable substantive doctrines and, if 'Retrieved Judicial Precedents' is non-empty, cite the most relevant landmark precedent from that list to fortify the legal demand!
    - Explicitly state that all digital/electronic records (WhatsApp, emails, UPI/bank statements) are preserved for production with a **Section 63 Certificate under the Bharatiya Sakshya Adhiniyam, 2023**.
    - Include an unequivocal **15-Day Statutory Cure / Demand Clause** specifying the exact principal amount in INR plus 18% p.a. interest (Section 34 CPC) and any non-monetary relief.
    - Include a formal **Jurisdiction & Consequences of Non-Compliance Clause** identifying the exact competent Forum/Court and warning of civil/statutory proceedings *"at your sole risk as to costs and consequences."*

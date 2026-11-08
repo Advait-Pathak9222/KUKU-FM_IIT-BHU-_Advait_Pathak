@@ -27,6 +27,7 @@ from .services.voice_service import (
     generate_voice_response
 )
 from .services.pdf_generator import generate_legal_notice_pdf
+from .services.precedent_search import run_calibrated_precedent_agent
 from .kb import get_kb
 
 app = FastAPI(
@@ -172,6 +173,15 @@ def process_chat_turn(
     missing_vars = check_missing_variables(current_domain, updated_facts)
     is_complete = len(missing_vars) == 0
 
+    # 4b. Calibrated Severity Gate & Live IndianKanoon Precedent Browsing Agent
+    precedent_info = run_calibrated_precedent_agent(
+        domain=current_domain,
+        user_msg=user_msg,
+        facts=updated_facts,
+        is_complete=is_complete
+    )
+    updated_facts["_precedent_search"] = precedent_info
+
     legal_draft = assemble_legal_notice(current_domain, updated_facts) if is_complete else None
 
     # 5. Generate context-aware, non-repetitive AI Lawyer response
@@ -205,7 +215,8 @@ def process_chat_turn(
         "escalation_reason": None,
         "missing_variables": missing_vars,
         "facts": updated_facts,
-        "legal_notice_draft": legal_draft
+        "legal_notice_draft": legal_draft,
+        "precedent_search": precedent_info
     }
 
 
@@ -218,7 +229,7 @@ def process_roleplay_turn(
     """
     Runs a single turn of the counterparty negotiation practice simulator while
     simultaneously running Triage, Fact Extraction (with CTC/deposit calculations),
-    Missing Variable Audit, and Legal Notice Assembly.
+    Missing Variable Audit, Calibrated Precedent Search, and Legal Notice Assembly.
     """
     state = get_case_state(session_id)
     prior_history = get_chat_history(session_id, limit=15)
@@ -260,6 +271,15 @@ def process_roleplay_turn(
     )
     missing_vars = check_missing_variables(current_domain, updated_facts)
     is_complete = len(missing_vars) == 0
+
+    precedent_info = run_calibrated_precedent_agent(
+        domain=current_domain,
+        user_msg=user_argument,
+        facts=updated_facts,
+        is_complete=is_complete
+    )
+    updated_facts["_precedent_search"] = precedent_info
+
     legal_draft = assemble_legal_notice(current_domain, updated_facts) if is_complete else None
 
     upsert_case_state(
@@ -295,6 +315,7 @@ def process_roleplay_turn(
             language_code=lang if lang != "unknown" else "hi-IN"
         )
 
+    rp_res["precedent_search"] = precedent_info
     rp_res["case_state"] = {
         "domain": current_domain,
         "facts": updated_facts,
