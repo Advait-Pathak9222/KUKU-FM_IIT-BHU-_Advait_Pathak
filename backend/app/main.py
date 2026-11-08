@@ -228,14 +228,35 @@ def process_chat_turn(
     }
 
 
-def process_roleplay_turn(session_id: str, user_argument: str, language_code: Optional[str] = None) -> Dict[str, str]:
-    """Runs a single turn of the counterparty negotiation practice simulator."""
+def process_roleplay_turn(
+    session_id: str,
+    user_argument: str,
+    language_code: Optional[str] = None,
+    include_audio: bool = True
+) -> Dict[str, Optional[str]]:
+    """Runs a single turn of the counterparty negotiation practice simulator (with optional TTS voice reply)."""
     state = get_case_state(session_id)
     domain = state.get("domain", "rental_deposit") if state else "rental_deposit"
     if domain not in ("rental_deposit", "unpaid_salary"):
         domain = "rental_deposit"
     facts = state.get("facts", {}) if state else {}
-    return generate_roleplay_response(domain=domain, facts=facts, user_argument=user_argument, language_code=language_code)
+
+    lang = language_code
+    if not lang:
+        if any(w in user_argument for w in ["आहे", "नाही", "माझं", "माझे", "आम्ही", "करा", "करावे", "मिळत", "रुपये", "घरमालक"]):
+            lang = "mr-IN"
+        elif any(w in user_argument for w in ["hai", "nahi", "raha", "diya", "karo", "makaan", "kiraya", "bhaiya"]):
+            lang = "hi-IN"
+        else:
+            lang = "hi-IN"
+
+    rp_res = generate_roleplay_response(domain=domain, facts=facts, user_argument=user_argument, language_code=lang)
+    if include_audio and rp_res.get("counterparty_reply"):
+        rp_res["audio_base64"] = generate_voice_response(
+            text=rp_res["counterparty_reply"],
+            language_code=lang if lang != "unknown" else "hi-IN"
+        )
+    return rp_res
 
 
 @app.post("/chat/{session_id}", response_model=ChatResponse)
@@ -262,6 +283,20 @@ def handle_roleplay(session_id: str, request: ChatRequest):
     if not user_arg:
         raise HTTPException(status_code=400, detail="Argument cannot be empty.")
     return process_roleplay_turn(session_id=session_id, user_argument=user_arg, language_code=request.language_code)
+
+
+@app.post("/audio-roleplay/{session_id}")
+async def handle_audio_roleplay(session_id: str, file: UploadFile = File(...)):
+    file_bytes = await file.read()
+    if not file_bytes:
+        raise HTTPException(status_code=400, detail="Received empty audio file.")
+    transcript, detected_lang = transcribe_audio_file(file_bytes, filename=file.filename or "roleplay.wav")
+    if not transcript:
+        raise HTTPException(status_code=422, detail="Failed to transcribe audio.")
+    rp_res = process_roleplay_turn(session_id=session_id, user_argument=transcript, language_code=detected_lang, include_audio=True)
+    rp_res["user_transcription"] = transcript
+    rp_res["detected_language"] = detected_lang
+    return rp_res
 
 
 @app.post("/audio-chat/{session_id}", response_model=AudioChatResponse)
