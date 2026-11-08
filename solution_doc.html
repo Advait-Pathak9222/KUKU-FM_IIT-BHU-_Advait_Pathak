@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NyayaMitra — Solution Document</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,600;6..72,700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #222222;
+    background: #ffffff;
+    font-size: 11.2px;
+    line-height: 1.44;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .page {
+    width: 210mm;
+    height: 297mm;
+    padding: 13mm 17mm 11mm 17mm;
+    position: relative;
+    page-break-after: always;
+    overflow: hidden;
+  }
+  .page:last-child {
+    page-break-after: auto;
+  }
+  .page-num {
+    position: absolute;
+    bottom: 9mm;
+    right: 17mm;
+    font-size: 10px;
+    color: #888888;
+  }
+  .accent-bar {
+    width: 34px;
+    height: 3.5px;
+    background: #b83a2a;
+    margin-bottom: 10px;
+  }
+  h1 {
+    font-family: 'Newsreader', Georgia, serif;
+    font-size: 25px;
+    font-weight: 700;
+    color: #161616;
+    letter-spacing: -0.3px;
+    margin-bottom: 3px;
+  }
+  .subtitle {
+    font-size: 12.2px;
+    color: #666666;
+    margin-bottom: 11px;
+  }
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 95px 1fr;
+    row-gap: 2.5px;
+    font-size: 10.8px;
+    margin-bottom: 11px;
+  }
+  .meta-label {
+    color: #888888;
+  }
+  .meta-val {
+    color: #222222;
+  }
+  .meta-val a {
+    color: #222222;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .tldr-box {
+    background: #fbf6f0;
+    border-left: 3px solid #c96442;
+    border-radius: 3px;
+    padding: 9px 13px;
+    margin-bottom: 12px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .tldr-icon {
+    font-size: 13px;
+    line-height: 1.3;
+    margin-top: 1px;
+  }
+  .tldr-content p {
+    margin-bottom: 4px;
+    font-size: 11px;
+  }
+  .tldr-content p:last-child {
+    margin-bottom: 0;
+  }
+  h2 {
+    font-family: 'Newsreader', Georgia, serif;
+    font-size: 15.5px;
+    font-weight: 700;
+    color: #161616;
+    margin-top: 10px;
+    margin-bottom: 5px;
+  }
+  p {
+    margin-bottom: 6px;
+  }
+  code, .mono {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9.8px;
+    background: #f4f1ea;
+    color: #8f341e;
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+  .diagram-wrapper {
+    background: #fcfaf7;
+    border: 1px solid #e6dfd5;
+    border-radius: 6px;
+    padding: 8px 10px 6px 10px;
+    margin: 6px 0 9px 0;
+  }
+  .diagram-caption {
+    font-size: 9.2px;
+    color: #6b655e;
+    text-align: center;
+    margin-top: 3px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  ol.steps {
+    padding-left: 16px;
+    margin-top: 4px;
+  }
+  ol.steps li {
+    margin-bottom: 4.5px;
+    font-size: 10.8px;
+    line-height: 1.4;
+  }
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-top: 6px;
+    margin-bottom: 10px;
+  }
+  h3 {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #161616;
+    margin-bottom: 5px;
+  }
+  ul.clean-list {
+    list-style: none;
+    padding-left: 0;
+  }
+  ul.clean-list li {
+    position: relative;
+    padding-left: 11px;
+    margin-bottom: 4px;
+    font-size: 10.8px;
+  }
+  ul.clean-list li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #888;
+  }
+  .small-note {
+    font-size: 9.8px;
+    color: #666666;
+    margin-top: 6px;
+    line-height: 1.35;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 5px;
+    margin-bottom: 11px;
+    font-size: 10.4px;
+  }
+  th {
+    text-align: left;
+    color: #777777;
+    font-weight: 600;
+    padding: 4.5px 6px;
+    border-bottom: 1px solid #dddddd;
+    font-size: 9.8px;
+  }
+  td {
+    padding: 5px 6px;
+    border-bottom: 1px solid #eeeeee;
+    vertical-align: top;
+  }
+  tr.total-row td {
+    font-weight: 700;
+    border-top: 1.5px solid #cccccc;
+    border-bottom: none;
+    padding-top: 6px;
+  }
+  .num-col {
+    text-align: right;
+    white-space: nowrap;
+  }
+  .badge-pass {
+    display: inline-block;
+    background: #e6f4ea;
+    color: #1e7e34;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9.2px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+  .plain-mono {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9.6px;
+    color: #333333;
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== PAGE 1 ==================== -->
+<div class="page">
+  <div class="accent-bar"></div>
+  <h1>NyayaMitra — an AI lawyer for everyday Bharat</h1>
+  <div class="subtitle">Solution doc for Problem 2. Speak your problem in your own language, get a legal notice you can actually send.</div>
+
+  <div class="meta-grid">
+    <div class="meta-label">Submitted by</div>
+    <div class="meta-val">Advait Pathak · AI Generalist</div>
+    <div class="meta-label">Problem</div>
+    <div class="meta-val">Problem 2 — AI Lawyer</div>
+    <div class="meta-label">Prototype</div>
+    <div class="meta-val">Streamlit front end, FastAPI back end (runs locally or on cloud)</div>
+    <div class="meta-label">Code</div>
+    <div class="meta-val"><a href="https://github.com/Advait-Pathak9222/KUKU-FM_IIT-BHU-_Advait_Pathak">github.com/Advait-Pathak9222/KUKU-FM_IIT-BHU-_Advait_Pathak</a></div>
+  </div>
+
+  <div class="tldr-box">
+    <div class="tldr-icon">⚖️</div>
+    <div class="tldr-content">
+      <p><strong>TL;DR</strong> — Someone whose landlord kept their deposit, or whose startup stopped paying salary, sends a voice note in Hindi, Marathi or Hinglish. NyayaMitra asks a few follow-ups, calculates exactly what they're owed, checks which laws apply, and drafts a formal legal notice.</p>
+      <p>It costs about <strong>55 paise per case</strong>, and it passed all <strong>11 end-to-end test scenarios</strong> I wrote, including refusing a domestic-violence case and pointing the user to the right helpline.</p>
+    </div>
+  </div>
+
+  <h2>Why I picked this problem</h2>
+  <p>Most people in India never go to a lawyer over a small civil dispute: a deposit that wasn't returned, unpaid salary, a faulty product, a freelance cheque that bounced. A consultation costs ₹2,500–5,000, the vocabulary is intimidating, and writing a proper pre-litigation notice is out of reach for most.</p>
+  <p>Problem 1 deals with English screenplays. Problem 2 is about the same people who listen to Kuku FM: regional-language speakers who would explain their problem in a long, emotional voice note rather than fill in a form. That felt like the more useful thing to build, and the harder one to get right, because the facts, the maths and the law all have to be correct.</p>
+  <p><strong>Scope.</strong> Four kinds of civil recovery: rental deposit, unpaid salary, consumer disputes, and money recovery (including cheque bounce). Criminal matters, domestic violence, dowry, divorce and custody are deliberately out of scope. If any of these come up on any turn, the assistant stops and gives NALSA (15100), the Women's Helpline (1091) or 112.</p>
+
+  <h2>How it works — System Architecture &amp; Data Flow</h2>
+
+  <!-- SYSTEM DESIGN FLOW DIAGRAM (SVG) -->
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 820 232" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+          <path d="M 0 1.5 L 8.5 5 L 0 8.5 z" fill="#6b5e52"/>
+        </marker>
+        <marker id="arrow-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+          <path d="M 0 1.5 L 8.5 5 L 0 8.5 z" fill="#b83a2a"/>
+        </marker>
+        <marker id="arrow-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+          <path d="M 0 1.5 L 8.5 5 L 0 8.5 z" fill="#2b6e44"/>
+        </marker>
+      </defs>
+
+      <!-- LAYER BACKGROUNDS -->
+      <rect x="4" y="4" width="128" height="224" rx="5" fill="#f5efe6" stroke="#ded4c6" stroke-width="1"/>
+      <text x="68" y="18" font-family="IBM Plex Mono, monospace" font-size="8.5" font-weight="600" fill="#7a6a58" text-anchor="middle">1. MULTIMODAL INTAKE</text>
+
+      <rect x="144" y="4" width="136" height="224" rx="5" fill="#f5efe6" stroke="#ded4c6" stroke-width="1"/>
+      <text x="212" y="18" font-family="IBM Plex Mono, monospace" font-size="8.5" font-weight="600" fill="#7a6a58" text-anchor="middle">2. TRIAGE &amp; GUARDRAIL</text>
+
+      <rect x="292" y="4" width="202" height="224" rx="5" fill="#f5efe6" stroke="#ded4c6" stroke-width="1"/>
+      <text x="393" y="18" font-family="IBM Plex Mono, monospace" font-size="8.5" font-weight="600" fill="#7a6a58" text-anchor="middle">3. NEURO-SYMBOLIC CORE</text>
+
+      <rect x="506" y="4" width="148" height="224" rx="5" fill="#f5efe6" stroke="#ded4c6" stroke-width="1"/>
+      <text x="580" y="18" font-family="IBM Plex Mono, monospace" font-size="8.5" font-weight="600" fill="#7a6a58" text-anchor="middle">4. SEVERITY &amp; RAG</text>
+
+      <rect x="666" y="4" width="150" height="224" rx="5" fill="#f5efe6" stroke="#ded4c6" stroke-width="1"/>
+      <text x="741" y="18" font-family="IBM Plex Mono, monospace" font-size="8.5" font-weight="600" fill="#7a6a58" text-anchor="middle">5. OUTPUTS &amp; PRACTICE</text>
+
+      <!-- STAGE 1: INTAKE -->
+      <rect x="12" y="30" width="112" height="48" rx="4" fill="#ffffff" stroke="#c96442" stroke-width="1.3"/>
+      <text x="68" y="46" font-family="Source Sans 3, sans-serif" font-size="9.5" font-weight="700" fill="#161616" text-anchor="middle">User Voice / Text</text>
+      <text x="68" y="58" font-family="IBM Plex Mono, monospace" font-size="7.8" fill="#8f341e" text-anchor="middle">Sarvam Saaras v3 STT</text>
+      <text x="68" y="69" font-family="Source Sans 3, sans-serif" font-size="8" fill="#555" text-anchor="middle">11 Indian langs + Hinglish</text>
+
+      <rect x="12" y="96" width="112" height="44" rx="4" fill="#ffffff" stroke="#b5a898" stroke-width="1.1"/>
+      <text x="68" y="113" font-family="Source Sans 3, sans-serif" font-size="9.2" font-weight="700" fill="#222" text-anchor="middle">Session State Store</text>
+      <text x="68" y="125" font-family="IBM Plex Mono, monospace" font-size="7.8" fill="#555" text-anchor="middle">FastAPI + SQLite DB</text>
+      <text x="68" y="135" font-family="Source Sans 3, sans-serif" font-size="7.8" fill="#666" text-anchor="middle">Full transcript memory</text>
+
+      <path d="M 68 78 L 68 94" fill="none" stroke="#6b5e52" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+      <!-- STAGE 2: TRIAGE -->
+      <rect x="152" y="30" width="120" height="52" rx="4" fill="#ffffff" stroke="#8c7a66" stroke-width="1.2"/>
+      <text x="212" y="45" font-family="Source Sans 3, sans-serif" font-size="9.5" font-weight="700" fill="#161616" text-anchor="middle">Domain Router</text>
+      <text x="212" y="57" font-family="Source Sans 3, sans-serif" font-size="8" fill="#444" text-anchor="middle">• Rental Deposit • Salary</text>
+      <text x="212" y="68" font-family="Source Sans 3, sans-serif" font-size="8" fill="#444" text-anchor="middle">• Consumer • Money/NI 138</text>
+
+      <!-- Out of Scope Hard Stop -->
+      <rect x="152" y="156" width="120" height="60" rx="4" fill="#fdf2f0" stroke="#b83a2a" stroke-width="1.3"/>
+      <text x="212" y="172" font-family="Source Sans 3, sans-serif" font-size="9" font-weight="700" fill="#b83a2a" text-anchor="middle">🛑 Hard Stop Guardrail</text>
+      <text x="212" y="184" font-family="Source Sans 3, sans-serif" font-size="7.8" fill="#6e2219" text-anchor="middle">Criminal / DV / Dowry / Custody</text>
+      <text x="212" y="195" font-family="IBM Plex Mono, monospace" font-size="7.5" fill="#b83a2a" text-anchor="middle">Halts AI Drafting</text>
+      <text x="212" y="206" font-family="Source Sans 3, sans-serif" font-size="7.8" font-weight="600" fill="#6e2219" text-anchor="middle">NALSA 15100 · 1091 · 112</text>
+
+      <path d="M 124 54 L 150 54" fill="none" stroke="#6b5e52" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <path d="M 212 82 L 212 153" fill="none" stroke="#b83a2a" stroke-width="1.2" stroke-dasharray="3,2" marker-end="url(#arrow-red)"/>
+      <text x="216" y="122" font-family="IBM Plex Mono, monospace" font-size="7.5" fill="#b83a2a">out_of_scope</text>
+
+      <!-- STAGE 3: NEURO-SYMBOLIC CORE -->
+      <rect x="300" y="28" width="186" height="50" rx="4" fill="#ffffff" stroke="#c96442" stroke-width="1.3"/>
+      <text x="393" y="43" font-family="Source Sans 3, sans-serif" font-size="9.5" font-weight="700" fill="#161616" text-anchor="middle">Multi-Turn Fact &amp; Formula LLM</text>
+      <text x="393" y="55" font-family="IBM Plex Mono, monospace" font-size="7.8" fill="#8f341e" text-anchor="middle">sarvam-105b-conversations</text>
+      <text x="393" y="67" font-family="Source Sans 3, sans-serif" font-size="8" fill="#555" text-anchor="middle">Extracts JSON facts + math expression</text>
+
+      <rect x="300" y="88" width="90" height="56" rx="4" fill="#fffdf9" stroke="#2b6e44" stroke-width="1.2"/>
+      <text x="345" y="103" font-family="Source Sans 3, sans-serif" font-size="8.8" font-weight="700" fill="#1d5230" text-anchor="middle">AST Claim Maths</text>
+      <text x="345" y="115" font-family="IBM Plex Mono, monospace" font-size="7.3" fill="#2b6e44" text-anchor="middle">_safe_eval_math</text>
+      <text x="345" y="126" font-family="IBM Plex Mono, monospace" font-size="7.1" fill="#444" text-anchor="middle">1200000/12*2</text>
+      <text x="345" y="137" font-family="Source Sans 3, sans-serif" font-size="7.6" font-weight="600" fill="#1d5230" text-anchor="middle">= ₹2,00,000 exact</text>
+
+      <rect x="396" y="88" width="90" height="56" rx="4" fill="#fffdf9" stroke="#8c7a66" stroke-width="1.2"/>
+      <text x="441" y="103" font-family="Source Sans 3, sans-serif" font-size="8.8" font-weight="700" fill="#222" text-anchor="middle">7 LL.B. Doctrines</text>
+      <text x="441" y="114" font-family="Source Sans 3, sans-serif" font-size="7.5" fill="#444" text-anchor="middle">ICA · TPA · ID Act</text>
+      <text x="441" y="124" font-family="Source Sans 3, sans-serif" font-size="7.5" fill="#444" text-anchor="middle">CPA · NI 138 · CPC</text>
+      <text x="441" y="135" font-family="IBM Plex Mono, monospace" font-size="7.2" fill="#8f341e" text-anchor="middle">BSA Sec 63 Proof</text>
+
+      <!-- Completeness Gate / Follow-up Loop -->
+      <rect x="300" y="156" width="186" height="60" rx="4" fill="#ffffff" stroke="#8c7a66" stroke-width="1.2"/>
+      <text x="393" y="171" font-family="Source Sans 3, sans-serif" font-size="9" font-weight="700" fill="#161616" text-anchor="middle">Completeness Check &amp; Dialogue</text>
+      <text x="393" y="183" font-family="Source Sans 3, sans-serif" font-size="7.9" fill="#444" text-anchor="middle">Missing facts? Ask ≤2 targeted questions</text>
+      <text x="393" y="194" font-family="Source Sans 3, sans-serif" font-size="7.9" fill="#444" text-anchor="middle">(Zero repetitive sympathy templates)</text>
+      <text x="393" y="206" font-family="IBM Plex Mono, monospace" font-size="7.4" fill="#2b6e44" text-anchor="middle">All 7–8 domain vars ready → Advance</text>
+
+      <path d="M 272 54 L 298 54" fill="none" stroke="#6b5e52" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <path d="M 345 78 L 345 86" fill="none" stroke="#6b5e52" stroke-width="1.1" marker-end="url(#arrow)"/>
+      <path d="M 441 78 L 441 86" fill="none" stroke="#6b5e52" stroke-width="1.1" marker-end="url(#arrow)"/>
+      <path d="M 345 144 L 345 154" fill="none" stroke="#6b5e52" stroke-width="1.1" marker-end="url(#arrow)"/>
+      <path d="M 441 144 L 441 154" fill="none" stroke="#6b5e52" stroke-width="1.1" marker-end="url(#arrow)"/>
+      <!-- Loop back to Session Store cleanly along bottom track -->
+      <path d="M 393 216 L 393 223 L 68 223 L 68 142" fill="none" stroke="#8c7a66" stroke-width="1.1" stroke-dasharray="3,2" marker-end="url(#arrow)"/>
+      <text x="230" y="220" font-family="IBM Plex Mono, monospace" font-size="7.1" fill="#7a6a58" text-anchor="middle">↻ if missing facts: ask ≤2 follow-up questions &amp; update state</text>
+
+      <!-- STAGE 4: SEVERITY GATE & PRECEDENTS -->
+      <rect x="514" y="30" width="132" height="50" rx="4" fill="#ffffff" stroke="#c96442" stroke-width="1.3"/>
+      <text x="580" y="45" font-family="Source Sans 3, sans-serif" font-size="9.3" font-weight="700" fill="#161616" text-anchor="middle">Severity Gate (0–1)</text>
+      <text x="580" y="57" font-family="Source Sans 3, sans-serif" font-size="7.8" fill="#444" text-anchor="middle">Quantum + Coercion +</text>
+      <text x="580" y="68" font-family="Source Sans 3, sans-serif" font-size="7.8" fill="#444" text-anchor="middle">Evidentiary Complexity</text>
+
+      <rect x="514" y="96" width="132" height="62" rx="4" fill="#fffdf9" stroke="#2b6e44" stroke-width="1.3"/>
+      <text x="580" y="111" font-family="IBM Plex Mono, monospace" font-size="8" font-weight="600" fill="#1d5230" text-anchor="middle">If Score ≥ 0.60 (Severe)</text>
+      <text x="580" y="123" font-family="Source Sans 3, sans-serif" font-size="8.2" font-weight="700" fill="#222" text-anchor="middle">Live IndianKanoon Search</text>
+      <text x="580" y="135" font-family="IBM Plex Mono, monospace" font-size="7.2" fill="#555" text-anchor="middle">doctypes:judgments</text>
+      <text x="580" y="147" font-family="Source Sans 3, sans-serif" font-size="7.6" fill="#444" text-anchor="middle">+ 5 SC Landmark Anchors</text>
+
+      <rect x="514" y="168" width="132" height="48" rx="4" fill="#ffffff" stroke="#b5a898" stroke-width="1.1"/>
+      <text x="580" y="184" font-family="IBM Plex Mono, monospace" font-size="8" font-weight="600" fill="#666" text-anchor="middle">If Score &lt; 0.60 (Routine)</text>
+      <text x="580" y="197" font-family="Source Sans 3, sans-serif" font-size="8.2" fill="#444" text-anchor="middle">Direct Fast-Path (&lt;2s)</text>
+      <text x="580" y="208" font-family="Source Sans 3, sans-serif" font-size="7.5" fill="#777" text-anchor="middle">Skips external web crawl</text>
+
+      <path d="M 486 54 L 512 54" fill="none" stroke="#6b5e52" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <path d="M 580 80 L 580 94" fill="none" stroke="#2b6e44" stroke-width="1.2" marker-end="url(#arrow-green)"/>
+
+      <!-- STAGE 5: OUTPUTS & PRACTICE -->
+      <rect x="674" y="28" width="134" height="62" rx="4" fill="#ffffff" stroke="#2b6e44" stroke-width="1.4"/>
+      <text x="741" y="43" font-family="Source Sans 3, sans-serif" font-size="9.3" font-weight="700" fill="#161616" text-anchor="middle">Bespoke Legal Notice</text>
+      <text x="741" y="55" font-family="Source Sans 3, sans-serif" font-size="7.8" fill="#444" text-anchor="middle">Closed-World Statute</text>
+      <text x="741" y="65" font-family="Source Sans 3, sans-serif" font-size="7.8" fill="#444" text-anchor="middle">Whitelist + SC Precedents</text>
+      <text x="741" y="79" font-family="IBM Plex Mono, monospace" font-size="7.6" font-weight="600" fill="#1d5230" text-anchor="middle">Download PDF &amp; MD</text>
+
+      <rect x="674" y="100" width="134" height="50" rx="4" fill="#ffffff" stroke="#c96442" stroke-width="1.2"/>
+      <text x="741" y="116" font-family="Source Sans 3, sans-serif" font-size="9.2" font-weight="700" fill="#161616" text-anchor="middle">Spoken Consultation</text>
+      <text x="741" y="128" font-family="IBM Plex Mono, monospace" font-size="7.6" fill="#8f341e" text-anchor="middle">Sarvam Bulbul v3 TTS</text>
+      <text x="741" y="140" font-family="Source Sans 3, sans-serif" font-size="7.8" fill="#555" text-anchor="middle">Regional voice guidance</text>
+
+      <rect x="674" y="160" width="134" height="56" rx="4" fill="#fffdf9" stroke="#8c7a66" stroke-width="1.2"/>
+      <text x="741" y="175" font-family="Source Sans 3, sans-serif" font-size="9" font-weight="700" fill="#161616" text-anchor="middle">Voice Role-Play Dojo</text>
+      <text x="741" y="187" font-family="Source Sans 3, sans-serif" font-size="7.8" fill="#444" text-anchor="middle">Simulates Landlord / HR</text>
+      <text x="741" y="198" font-family="Source Sans 3, sans-serif" font-size="7.8" fill="#444" text-anchor="middle">New facts auto-sync back</text>
+      <text x="741" y="209" font-family="IBM Plex Mono, monospace" font-size="7.3" fill="#8f341e" text-anchor="middle">↻ Updates Case State</text>
+
+      <path d="M 646 115 L 660 115 L 660 58 L 672 58" fill="none" stroke="#2b6e44" stroke-width="1.2" marker-end="url(#arrow-green)"/>
+      <path d="M 646 190 L 664 190 L 664 68 L 672 68" fill="none" stroke="#6b5e52" stroke-width="1.1" marker-end="url(#arrow)"/>
+      <path d="M 646 125 L 672 125" fill="none" stroke="#6b5e52" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <path d="M 741 150 L 741 158" fill="none" stroke="#6b5e52" stroke-width="1.1" marker-end="url(#arrow)"/>
+    </svg>
+    <div class="diagram-caption">Figure 1: NyayaMitra 5-Stage Neuro-Symbolic Architecture — separating LLM language understanding from deterministic AST arithmetic &amp; statutory guardrails.</div>
+  </div>
+
+  <ol class="steps">
+    <li><strong>Intake and triage.</strong> Sarvam Saaras (<code>saaras:v3</code>) transcribes the voice note (11 Indian languages). The conversation is routed to one of the four civil domains, or stopped immediately if it's out of scope.</li>
+    <li><strong>Claim maths.</strong> People describe money loosely: “18 lakh CTC, 12 fixed, 6 is ESOPs that haven't vested, two months not paid.” The LLM only writes the formula, e.g. <code>1200000 / 12 * 2</code>, and a restricted Python AST evaluator (<code>_safe_eval_math</code>) computes the exact figure.</li>
+    <li><strong>Legal check.</strong> The case is tested against seven core LL.B. subjects: Contract Act (Sec 10, 27, 70, 73, 74), TPA Sec 108(m) for wear and tear, ID Act Sec 2(s) and 33C(2) to tell a “workman” from a manager, Consumer Protection Act Sec 2(7) and 34(2)(d) for filing from your home city on e-Daakhil, NI Act Sec 138/139, CPC Order 37 with the Limitation Act, and Sec 63 of the Bharatiya Sakshya Adhiniyam, 2023 for WhatsApp and UPI evidence.</li>
+    <li><strong>Severity gate.</strong> A 0–1 score based on the amount, pressure tactics by the other side (withheld relieving letter, employment bond, unregistered lease, bounced cheque) and legal complexity. Below 0.60 it answers straight away. At 0.60 or above it searches IndianKanoon.org judgments live and pairs them with known Supreme Court precedents.</li>
+    <li><strong>Notice and practice.</strong> Facts, maths and precedents go into a formal Legal Notice of Demand (PDF and Markdown). There's also a voice role-play (Sarvam Bulbul <code>bulbul:v3</code>) where the user can practise arguing with the landlord or employer, and any new facts they mention get added to the case.</li>
+  </ol>
+
+  <div class="page-num">1 / 2</div>
+</div>
+
+<!-- ==================== PAGE 2 ==================== -->
+<div class="page">
+  <h2 style="margin-top: 2px;">Stopping the model from making things up</h2>
+  <p>A general chatbot in this role will happily invent a section number, get a three-step subtraction wrong, or reach for IPC 420 in what is plainly a civil recovery. So I split the work: the model handles language and judgement, and anything that has to be exactly right is done in code.</p>
+
+  <div class="two-col">
+    <div>
+      <h3>What the LLM does</h3>
+      <ul class="clean-list">
+        <li>Keeps track of facts across a multi-turn conversation</li>
+        <li>Writes the claim formula (never the final answer)</li>
+        <li>Picks up case-specific details and runs the legal diagnosis</li>
+        <li>Replies in the user's language without repeating itself</li>
+        <li>Plays the other party in adversarial voice role-play</li>
+      </ul>
+      <div class="small-note">Model: <code>sarvam-105b-conversations</code>. A single <code>call_llm</code> wrapper means it can be swapped for OpenAI, Gemini or Claude.</div>
+    </div>
+    <div>
+      <h3>What's fixed in code</h3>
+      <ul class="clean-list">
+        <li><strong>Every rupee figure</strong> comes from the AST evaluator.</li>
+        <li><strong>Citations</strong> are limited to a per-domain whitelist of statutes (ICA, TPA, Payment of Wages Act, ID Act, CPA 2019, NI Act, CPC, BSA 2023) and five vetted precedents: <em>Fateh Chand</em>, <em>Central Inland Water Transport</em>, <em>Kailash Nath</em>, <em>Rangappa</em>, <em>Pioneer Urban</em>.</li>
+        <li><strong>Escalation</strong> on criminal, DV, dowry, divorce or custody signals is a hard stop in Python, not a prompt instruction.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>What one case costs</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Step</th>
+        <th>Model / service</th>
+        <th>Usage</th>
+        <th class="num-col">Cost</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Voice transcription</td>
+        <td>Sarvam Saaras <code>saaras:v3</code></td>
+        <td>~20 s of audio</td>
+        <td class="num-col">₹0.15</td>
+      </tr>
+      <tr>
+        <td>Reasoning, maths, drafting</td>
+        <td>Sarvam-105B-Conversations</td>
+        <td>~1,800 tokens across the intake</td>
+        <td class="num-col">₹0.25</td>
+      </tr>
+      <tr>
+        <td>Precedent search</td>
+        <td>IndianKanoon (HTTP) + Python</td>
+        <td>Only when severity ≥ 0.60</td>
+        <td class="num-col">₹0.00</td>
+      </tr>
+      <tr>
+        <td>Spoken advice</td>
+        <td>Sarvam Bulbul <code>bulbul:v3</code></td>
+        <td>~15 s of audio</td>
+        <td class="num-col">₹0.15</td>
+      </tr>
+      <tr class="total-row">
+        <td colspan="3">Per case — notice PDF plus spoken consultation</td>
+        <td class="num-col">~₹0.55</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Testing</h2>
+  <p>I ran 11 end-to-end scenarios (all unedited traces in <code>raw_outputs/</code>), including a four-turn Hindi salary conversation, wear-and-tear on an unregistered lease, a freelance cheque bounce and live precedent lookup.</p>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 68px;">Case</th>
+        <th style="width: 195px;">Scenario</th>
+        <th style="width: 118px;">Domain (severity)</th>
+        <th style="width: 52px;">Result</th>
+        <th>What it showed</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="plain-mono">TC 01–04</td>
+        <td>Deposit and oral-lease cases in Bengaluru, Pune, Delhi</td>
+        <td class="plain-mono">rental_deposit</td>
+        <td><span class="badge-pass">Pass</span></td>
+        <td>Sec 108(m) TPA and Sec 63 BSA applied; ₹1,50,000 − ₹65,000 = ₹85,000</td>
+      </tr>
+      <tr>
+        <td class="plain-mono">TC 05–07, 09</td>
+        <td>4-turn Hindi chat: ₹18L CTC, ₹12L fixed, service bond threat</td>
+        <td class="plain-mono">unpaid_salary (0.85)</td>
+        <td><span class="badge-pass">Pass</span></td>
+        <td>₹12L ÷ 12 × 2 = ₹2,00,000, ESOPs excluded; cited <em>Central Inland Water Transport</em></td>
+      </tr>
+      <tr>
+        <td class="plain-mono">TC 11</td>
+        <td>Freelance/business loan + dishonoured HDFC cheque</td>
+        <td class="plain-mono">money_recovery (0.85)</td>
+        <td><span class="badge-pass">Pass</span></td>
+        <td>15-day statutory demand notice under NI Act 138/139; cited <em>Rangappa v. Sri Mohan</em></td>
+      </tr>
+      <tr>
+        <td class="plain-mono">TC 10</td>
+        <td>Faulty EV scooter battery with warranty refusal</td>
+        <td class="plain-mono">consumer_dispute</td>
+        <td><span class="badge-pass">Pass</span></td>
+        <td>CPA Sec 2(10) defect &amp; home-city filing under Sec 34(2)(d); cited <em>Pioneer Urban</em></td>
+      </tr>
+      <tr>
+        <td class="plain-mono">TC 08</td>
+        <td>Domestic violence, dowry harassment, child custody</td>
+        <td class="plain-mono">out_of_scope</td>
+        <td><span class="badge-pass">Pass</span></td>
+        <td>Stopped drafting immediately; gave NALSA 15100 and Women's Helpline 1091</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="two-col" style="margin-top: 12px;">
+    <div>
+      <h2 style="margin-top: 0;">What went wrong along the way</h2>
+      <p>I used coding assistants for scaffolding; Sarvam models do the speech and reasoning at runtime. Early builds forgot numbers from earlier turns (the CTC from turn 3 was gone by turn 4), got simple subtraction wrong (₹135k − ₹35k came out as ₹95k), and kept repeating the same sympathy line. Passing the full transcript each turn, moving all maths into the AST evaluator, and adding anti-repetition instructions fixed all three.</p>
+    </div>
+    <div>
+      <h2 style="margin-top: 0;">Known limitations</h2>
+      <ul class="clean-list">
+        <li>Vague dates like “Diwali ke aas-paas” are stored as said unless the user clarifies.</li>
+        <li>Heavy traffic noise can garble unfamiliar English company names in transcription.</li>
+        <li>Live IndianKanoon scraping relies on public HTML structure; if offline, the engine falls back to its vetted Supreme Court anchor precedents.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-num">2 / 2</div>
+</div>
+
+</body>
+</html>
