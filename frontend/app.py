@@ -172,8 +172,12 @@ def send_text_message(message: str):
     # 2. In-Process Fallback (Enables 1-Click Streamlit Community Cloud Deployment)
     try:
         import importlib
+        import backend.app.kb as _kb_mod
+        import backend.app.services.triage as _tri_mod
         import backend.app.services.extractor as _ext_mod
         import backend.app.main as _main_mod
+        importlib.reload(_kb_mod)
+        importlib.reload(_tri_mod)
         importlib.reload(_ext_mod)
         importlib.reload(_main_mod)
         lang = None
@@ -202,8 +206,12 @@ def send_audio_message(audio_bytes: bytes, filename: str = "voice.wav"):
     # 2. In-Process Fallback (Enables 1-Click Streamlit Community Cloud Deployment)
     try:
         import importlib
+        import backend.app.kb as _kb_mod
+        import backend.app.services.triage as _tri_mod
         import backend.app.services.extractor as _ext_mod
         import backend.app.main as _main_mod
+        importlib.reload(_kb_mod)
+        importlib.reload(_tri_mod)
         importlib.reload(_ext_mod)
         importlib.reload(_main_mod)
         from backend.app.services.voice_service import transcribe_audio_file, generate_voice_response
@@ -230,8 +238,12 @@ def send_roleplay_message(argument_text: str):
         pass
     try:
         import importlib
+        import backend.app.kb as _kb_mod
+        import backend.app.services.triage as _tri_mod
         import backend.app.services.extractor as _ext_mod
         import backend.app.main as _main_mod
+        importlib.reload(_kb_mod)
+        importlib.reload(_tri_mod)
         importlib.reload(_ext_mod)
         importlib.reload(_main_mod)
         return _main_mod.process_roleplay_turn(session_id=session_id, user_argument=argument_text, include_audio=True)
@@ -249,8 +261,12 @@ def send_audio_roleplay_message(audio_bytes: bytes, filename: str = "roleplay_vo
         pass
     try:
         import importlib
+        import backend.app.kb as _kb_mod
+        import backend.app.services.triage as _tri_mod
         import backend.app.services.extractor as _ext_mod
         import backend.app.main as _main_mod
+        importlib.reload(_kb_mod)
+        importlib.reload(_tri_mod)
         importlib.reload(_ext_mod)
         importlib.reload(_main_mod)
         from backend.app.services.voice_service import transcribe_audio_file
@@ -301,23 +317,25 @@ with st.sidebar:
     is_complete = st.session_state.case_state.get("is_complete", False)
     is_escalation = st.session_state.case_state.get("escalation_triggered", False)
     facts = st.session_state.case_state.get("facts", {})
+    public_facts = {k: v for k, v in facts.items() if not str(k).startswith("_")}
     missing = st.session_state.case_state.get("missing_variables", [])
 
-    domain_display = "UNKNOWN (LISTENING)"
-    if curr_domain == "rental_deposit":
-        domain_display = "🏠 TENANCY DEPOSIT"
-    elif curr_domain == "unpaid_salary":
-        domain_display = "💼 UNPAID SALARY"
-    elif curr_domain == "out_of_scope":
-        domain_display = "🚨 OUT OF SCOPE"
+    domain_map = {
+        "rental_deposit": "🏠 TENANCY & DEPOSIT",
+        "unpaid_salary": "💼 UNPAID SALARY & DUES",
+        "consumer_dispute": "🛒 CONSUMER & REFUND",
+        "money_recovery": "💸 RECOVERY & CHEQUE BOUNCE",
+        "out_of_scope": "🚨 OUT OF SCOPE"
+    }
+    domain_display = domain_map.get(curr_domain, "UNKNOWN (LISTENING)")
 
     st.markdown(f"**Dispute Type:** `{domain_display}`")
 
     # Progress Calculation
-    total_expected = len(facts) + len(missing)
+    total_expected = len(public_facts) + len(missing)
     if total_expected > 0:
-        progress = len(facts) / total_expected
-        st.progress(progress, text=f"Facts Verified: {len(facts)}/{total_expected}")
+        progress = min(1.0, len(public_facts) / total_expected)
+        st.progress(progress, text=f"Facts Verified: {len(public_facts)}/{total_expected}")
     
     if is_complete:
         st.success("✅ **Notice of Demand Ready!**")
@@ -326,13 +344,20 @@ with st.sidebar:
     else:
         st.info("🔍 Fact Gathering in Progress")
 
+    if facts.get("_calculation_note") or facts.get("_case_nuances"):
+        st.markdown("#### 🧮 Lawyer Reasoning & Math")
+        if facts.get("_calculation_note"):
+            st.info(f"**Math:** {facts['_calculation_note']}")
+        if facts.get("_case_nuances"):
+            st.caption(f"**Case Nuances:** {facts['_case_nuances']}")
+
     # Formatted Fact Cards (Clean UI instead of raw JSON)
     st.markdown("#### 📋 Extracted Facts")
-    if facts:
-        for k, v in facts.items():
+    if public_facts:
+        for k, v in public_facts.items():
             clean_key = k.replace("_", " ").title()
             val_display = str(v)
-            if "amount" in k.lower() or "owed" in k.lower():
+            if "amount" in k.lower() or "owed" in k.lower() or "claim" in k.lower():
                 try:
                     val_display = f"₹{int(float(v)):,}"
                 except ValueError:
@@ -570,12 +595,13 @@ with tab_text:
 # TAB 3: PRACTICE ARGUING / ROLEPLAY COUNTERPARTY (VOICE + TEXT + LIVE FACT CAPTURE)
 with tab_roleplay:
     rp_domain = st.session_state.case_state.get("domain", "unknown")
-    if rp_domain == "unpaid_salary":
-        opponent_label = "Defensive Company HR / Manager"
-    elif rp_domain == "rental_deposit":
-        opponent_label = "Stubborn Landlord (Makaan-Maalik)"
-    else:
-        opponent_label = "Counterparty (Landlord / Company HR — Auto-Detects as You Speak)"
+    rp_opponent_map = {
+        "unpaid_salary": "Defensive Company HR / Manager",
+        "rental_deposit": "Stubborn Landlord (Makaan-Maalik)",
+        "consumer_dispute": "Evasive Company Grievance Officer / Seller",
+        "money_recovery": "Defaulting Client / Debtor"
+    }
+    opponent_label = rp_opponent_map.get(rp_domain, "Counterparty (Auto-Detects as You Speak)")
 
     st.markdown(f"**🥊 Practice Arguing Your Case Against: `{opponent_label}` (Live Fact-Capture & Coach)**")
     st.caption("Start a brand-new case or continue your current case here! As you argue by voice or text, NyayaMitra extracts your facts into the sidebar, challenges you on missing details, and suggests your next legal argument.")
