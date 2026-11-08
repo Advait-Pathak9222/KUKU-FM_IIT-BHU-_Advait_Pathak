@@ -171,13 +171,17 @@ def send_text_message(message: str):
 
     # 2. In-Process Fallback (Enables 1-Click Streamlit Community Cloud Deployment)
     try:
-        from backend.app.main import process_chat_turn
+        import importlib
+        import backend.app.services.extractor as _ext_mod
+        import backend.app.main as _main_mod
+        importlib.reload(_ext_mod)
+        importlib.reload(_main_mod)
         lang = None
         if any(w in message for w in ["आहे", "नाही", "माझं", "माझे", "आम्ही", "करा", "करावे", "मिळत", "रुपये", "घरमालक"]):
             lang = "mr-IN"
-        elif any(w in message for w in ["hai", "nahi", "raha", "diya", "karo", "makaan", "kiraya", "bhaiya"]):
+        elif any(w in message for w in ["hai", "nahi", "raha", "diya", "karo", "makaan", "kiraya", "bhaiya", "है", "नहीं", "मेरा", "मेरी", "सैलरी", "कंपनी"]):
             lang = "hi-IN"
-        return process_chat_turn(session_id=session_id, user_msg=message, language_code=lang)
+        return _main_mod.process_chat_turn(session_id=session_id, user_msg=message, language_code=lang)
     except Exception as e:
         return {"reply": f"⚠️ Error processing text: {e}", "error": True}
 
@@ -197,12 +201,16 @@ def send_audio_message(audio_bytes: bytes, filename: str = "voice.wav"):
 
     # 2. In-Process Fallback (Enables 1-Click Streamlit Community Cloud Deployment)
     try:
-        from backend.app.main import process_chat_turn
+        import importlib
+        import backend.app.services.extractor as _ext_mod
+        import backend.app.main as _main_mod
+        importlib.reload(_ext_mod)
+        importlib.reload(_main_mod)
         from backend.app.services.voice_service import transcribe_audio_file, generate_voice_response
         transcript, lang = transcribe_audio_file(audio_bytes, filename=filename)
         if not transcript:
             return {"reply": "Failed to transcribe audio. Please speak clearly or use text input.", "error": True}
-        turn_res = process_chat_turn(session_id=session_id, user_msg=transcript, language_code=lang)
+        turn_res = _main_mod.process_chat_turn(session_id=session_id, user_msg=transcript, language_code=lang)
         audio_b64 = generate_voice_response(turn_res["reply"], language_code=lang)
         turn_res["user_transcription"] = transcript
         turn_res["detected_language"] = lang

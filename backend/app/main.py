@@ -15,8 +15,10 @@ from .models import ChatRequest, ChatResponse, AudioChatResponse
 from .services.triage import classify_user_intent, check_deterministic_escalation
 from .services.extractor import (
     extract_facts,
+    extract_facts_with_reasoning,
     check_missing_variables,
     generate_clarification_response,
+    generate_lawyer_turn_response,
     assemble_legal_notice,
     generate_roleplay_response
 )
@@ -129,29 +131,29 @@ def process_chat_turn(
 ) -> Dict[str, Any]:
     """
     Core state machine loop for a single conversation turn:
-    1. Persists user message in SQLite.
-    2. Runs continuous safety guardrail check (catches mid-conversation criminal/violence escalation).
+    1. Fetches prior conversation history & state from SQLite.
+    2. Runs continuous safety guardrail check.
     3. Runs Triage (if domain unknown).
-    4. Extracts/updates facts against Grounding KB.
-    5. Checks missing variables -> generates targeted clarification OR assembles notice.
+    4. Extracts/updates facts + performs financial/CTC calculations using full conversation history.
+    5. Generates non-repetitive, context-aware LLM lawyer response (and assembles deterministic Legal Notice when complete).
     6. Commits state and returns full result payload.
     """
-    # 1. Commit user message to SQLite chat_history
-    save_chat_message(session_id=session_id, role="user", content=user_msg, audio_url=audio_url)
-
-    # 2. Fetch existing state & history
+    # 1. Fetch existing state & prior history before appending current turn
     existing_state = get_case_state(session_id)
-    history = get_chat_history(session_id, limit=5)
+    prior_history = get_chat_history(session_id, limit=15)
+
+    # Save current user message to SQLite chat_history
+    save_chat_message(session_id=session_id, role="user", content=user_msg, audio_url=audio_url)
 
     current_domain = existing_state.get("domain") if existing_state else "unknown"
     current_facts = existing_state.get("facts", {}) if existing_state else {}
 
-    # 3. Continuous Safety Guardrail Check (runs on EVERY turn to catch mid-session escalations)
+    # 2. Continuous Safety Guardrail Check
     mid_turn_safety = check_deterministic_escalation(user_msg)
     if mid_turn_safety and mid_turn_safety.is_escalation:
         return _build_escalation_payload(session_id, current_facts, mid_turn_safety.escalation_reason)
 
-    # 4. If domain is unknown, run full Triage Classification
+    # 3. If domain is unknown, run full Triage Classification
     if current_domain == "unknown" or not current_domain:
         triage = classify_user_intent(user_msg)
         current_domain = triage.domain
@@ -159,50 +161,29 @@ def process_chat_turn(
         if triage.domain == "out_of_scope" or triage.is_escalation:
             return _build_escalation_payload(session_id, current_facts, triage.escalation_reason)
 
-    # 5. In-Scope: Extraction & Missing Variable Audit Loop
-    updated_facts = extract_facts(
+    # 4. In-Scope: Multi-Turn Fact Extraction + Financial Calculation Loop
+    updated_facts, calc_note = extract_facts_with_reasoning(
         domain=current_domain,
         new_message=user_msg,
         current_facts=current_facts,
-        recent_history=history
+        recent_history=prior_history
     )
     
     missing_vars = check_missing_variables(current_domain, updated_facts)
     is_complete = len(missing_vars) == 0
 
-    legal_draft = None
-    if is_complete:
-        # Generate the formal legal notice from deterministic template
-        legal_draft = assemble_legal_notice(current_domain, updated_facts)
-        kb = get_kb(current_domain)
-        standing_text = kb["grounded_legal_standing"]["hi"] if kb else ""
-        
-        # Add honest evidentiary risk warning if proof is oral/informal
-        proof_val = str(updated_facts.get("proof_status", ""))
-        evidentiary_warning = ""
-        if proof_val in ("oral_agreement_only", "informal_or_whatsapp"):
-            evidentiary_warning = (
-                "\n\n⚠️ **Evidentiary Risk Advisory (Oral / Cash Arrangement):** Chunki aapke paas written agreement ya formal bank receipt nahi hai, "
-                "court me sabit karne ke liye aapko secondary saboot (jaise bijli ka bill, padosi/witness बयान, ya WhatsApp message/call recording) "
-                "sambhal kar rakhne chahiye. Fir bhi, yeh Legal Notice bhejna aapka pehla strong kanooni kadam hai."
-            )
+    legal_draft = assemble_legal_notice(current_domain, updated_facts) if is_complete else None
 
-        reply_msg = (
-            f"✅ **Aapke sabhi zaroori facts verify ho chuke hain.**\n\n"
-            f"**Aapki Kanooni Sthiti (Legal Standing):**\n{standing_text}"
-            f"{evidentiary_warning}\n\n"
-            f"Maine aapke liye ek Formal Legal Notice of Demand draft kar diya hai. "
-            f"Aap ise verify karke samne wali party ko Speed Post, WhatsApp, ya Email ke zariye bhej sakte hain."
-        )
-    else:
-        # Generate targeted conversational clarification in user's detected regional language
-        reply_msg = generate_clarification_response(
-            domain=current_domain,
-            missing_fields=missing_vars,
-            user_message=user_msg,
-            facts=updated_facts,
-            language_code=language_code
-        )
+    # 5. Generate context-aware, non-repetitive AI Lawyer response
+    reply_msg = generate_lawyer_turn_response(
+        domain=current_domain,
+        missing_fields=missing_vars,
+        user_message=user_msg,
+        facts=updated_facts,
+        recent_history=prior_history,
+        calculation_note=calc_note,
+        language_code=language_code
+    )
 
     # 6. Commit state updates back to SQLite
     upsert_case_state(
@@ -236,13 +217,13 @@ def process_roleplay_turn(
 ) -> Dict[str, Any]:
     """
     Runs a single turn of the counterparty negotiation practice simulator while
-    simultaneously running Triage, Fact Extraction, Missing Variable Audit, and
-    Legal Notice Assembly so users can start a brand-new case directly inside Roleplay!
+    simultaneously running Triage, Fact Extraction (with CTC/deposit calculations),
+    Missing Variable Audit, and Legal Notice Assembly.
     """
+    state = get_case_state(session_id)
+    prior_history = get_chat_history(session_id, limit=15)
     save_chat_message(session_id=session_id, role="user", content=f"[Roleplay Argument] {user_argument}")
 
-    state = get_case_state(session_id)
-    history = get_chat_history(session_id, limit=5)
     current_domain = state.get("domain", "unknown") if state else "unknown"
     current_facts = state.get("facts", {}) if state else {}
 
@@ -270,12 +251,12 @@ def process_roleplay_turn(
             }
         current_domain = triage.domain
 
-    # 3. Extract new facts mentioned during the argument and audit missing fields
-    updated_facts = extract_facts(
+    # 3. Extract new facts + perform any math calculations mentioned during the argument
+    updated_facts, calc_note = extract_facts_with_reasoning(
         domain=current_domain,
         new_message=user_argument,
         current_facts=current_facts,
-        recent_history=history
+        recent_history=prior_history
     )
     missing_vars = check_missing_variables(current_domain, updated_facts)
     is_complete = len(missing_vars) == 0
@@ -304,7 +285,9 @@ def process_roleplay_turn(
         facts=updated_facts,
         user_argument=user_argument,
         language_code=lang,
-        missing_fields=missing_vars
+        missing_fields=missing_vars,
+        recent_history=prior_history,
+        calculation_note=calc_note
     )
     if include_audio and rp_res.get("counterparty_reply"):
         rp_res["audio_base64"] = generate_voice_response(
