@@ -72,10 +72,12 @@ UNPAID_SALARY_KB = {
     },
 
     "permissible_statutes": [
-        "Payment of Wages Act, 1936 / Industrial Disputes Act, 1947",
-        "Indian Contract Act, 1872 (Section 73 - Breach of Contract)",
-        "Code of Civil Procedure, 1908 (Order 37 - Summary Suit for Recovery of Debt)",
-        "Insolvency and Bankruptcy Code, 2016 (Section 8/9 - Demand Notice by Operational Creditor)"
+        "Payment of Wages Act, 1936 (Sections 3, 4 & 7–13 - Prohibition of Unauthorized Deductions) / Code on Wages, 2019",
+        "Industrial Disputes Act, 1947 (Section 2(s) - Workman Definition; Section 33C(2) - Recovery of Money Due from Employer) & State Shops and Establishments Acts",
+        "Indian Contract Act, 1872 (Sections 70, 73 & 74 - Breach of Contract & Unlawful Penalty Bonds; Section 27 - Void Restraint of Trade / Withholding Relieving Letter)",
+        "Code of Civil Procedure, 1908 (Order 37 - Summary Suit for Recovery of Debt; Section 34 - Interest)",
+        "Insolvency and Bankruptcy Code, 2016 (Sections 8 & 9 - Operational Creditor Demand Notice)",
+        "Bharatiya Sakshya Adhiniyam, 2023 (Section 63 - Electronic Evidence Certificate for Emails/WhatsApp/Bank Statements) & Limitation Act, 1963 (3-Year Limitation)"
     ],
 
     "legal_notice_template": (

@@ -344,12 +344,14 @@ with st.sidebar:
     else:
         st.info("🔍 Fact Gathering in Progress")
 
-    if facts.get("_calculation_note") or facts.get("_case_nuances"):
-        st.markdown("#### 🧮 Lawyer Reasoning & Math")
+    if facts.get("_calculation_note") or facts.get("_doctrinal_analysis") or facts.get("_case_nuances"):
+        st.markdown("#### 🎓 LL.B. Doctrinal & Math Analysis")
         if facts.get("_calculation_note"):
-            st.info(f"**Math:** {facts['_calculation_note']}")
+            st.info(f"🧮 **Math:** {facts['_calculation_note']}")
+        if facts.get("_doctrinal_analysis"):
+            st.success(f"⚖️ **Doctrinal Diagnostic:** {facts['_doctrinal_analysis']}")
         if facts.get("_case_nuances"):
-            st.caption(f"**Case Nuances:** {facts['_case_nuances']}")
+            st.caption(f"📌 **Case Nuances:** {facts['_case_nuances']}")
 
     # Formatted Fact Cards (Clean UI instead of raw JSON)
     st.markdown("#### 📋 Extracted Facts")

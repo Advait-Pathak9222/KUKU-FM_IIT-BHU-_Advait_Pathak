@@ -72,9 +72,12 @@ RENTAL_DEPOSIT_KB = {
     },
 
     "permissible_statutes": [
-        "Indian Contract Act, 1872 (Section 73 - Compensation for Breach of Contract)",
-        "Model Tenancy Act, 2021 (Principles on Security Deposit & Vacant Possession)",
-        "Code of Civil Procedure, 1908 (Order 37 - Summary Suit for Recovery of Money)"
+        "Indian Contract Act, 1872 (Sections 70, 73 & 74 - Breach of Contract, Restitution & Unlawful Penalty/Forfeiture)",
+        "Transfer of Property Act, 1882 (Section 108(m) - Reasonable Wear and Tear Exception; Section 106 - Lease Notice)",
+        "Model Tenancy Act, 2021 (Sections 11, 15 & 20 - Security Deposit Refund & Protection of Essential Services) / State Rent Control Acts",
+        "Code of Civil Procedure, 1908 (Order 37 - Summary Suit for Recovery; Section 20 - Jurisdiction; Section 34 - Interest)",
+        "Bharatiya Sakshya Adhiniyam, 2023 (Section 63 - Admissibility of Electronic Records / WhatsApp & UPI Proof)",
+        "Limitation Act, 1963 (3-Year Limitation Period for Recovery) & General Clauses Act, 1897 (Section 27 - Presumption of Service)"
     ],
 
     "legal_notice_template": (

@@ -2,6 +2,7 @@ from .rental_deposit import RENTAL_DEPOSIT_KB
 from .unpaid_salary import UNPAID_SALARY_KB
 from .consumer_dispute import CONSUMER_DISPUTE_KB
 from .money_recovery import MONEY_RECOVERY_KB
+from .law_school_doctrines import get_doctrinal_context, LAW_SCHOOL_DOCTRINAL_MATRIX
 
 GROUNDING_KBS = {
     "rental_deposit": RENTAL_DEPOSIT_KB,

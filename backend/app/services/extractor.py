@@ -5,7 +5,7 @@ import re
 from datetime import datetime
 from typing import Dict, Any, Tuple, Optional, List
 from .sarvam_client import call_llm
-from ..kb import get_kb
+from ..kb import get_kb, get_doctrinal_context
 
 # In-memory cache for bespoke legal notices keyed by (domain, canonical_facts_json)
 _NOTICE_CACHE: Dict[str, str] = {}
@@ -43,12 +43,15 @@ def _safe_eval_math(expr: str) -> Optional[int]:
     except Exception:
         return None
 
-EXTRACTION_SYSTEM_PROMPT = """You are the Autonomous Neuro-Symbolic Legal & Financial Reasoning Engine for NyayaMitra, an Indian AI Legal Assistant.
-Your task is to analyze the full multi-turn conversation transcript and the client's latest message, formulate any required financial or legal arithmetic, extract both core slots and case-specific nuances, and determine if we have sufficient facts to draft an enforceable Indian Legal Notice.
+EXTRACTION_SYSTEM_PROMPT = """You are the Autonomous Neuro-Symbolic Legal & Doctrinal Reasoning Engine for NyayaMitra, trained on the Bar Council of India (BCI) LL.B. curriculum.
+Your task is to analyze the full multi-turn conversation transcript and the client's latest message, formulate any required financial or legal arithmetic, apply LL.B. doctrinal & procedural analysis, extract both core slots and case-specific nuances, and determine if we have sufficient facts to draft an enforceable Indian Legal Notice.
 
 Case Domain: {domain_name} ({jurisdiction})
 Core Domain Schema:
 {schema_description}
+
+BCI LL.B. Doctrinal & Procedural Toolkit for This Case:
+{doctrinal_context}
 
 Current Extracted Facts So Far:
 {current_facts_json}
@@ -70,11 +73,16 @@ UNIVERSAL LEGAL REASONING & EXTRACTION PRINCIPLES:
    - Exclude non-accrued or unvested perks (like unvested stocks/ESOPs or conditional future bonuses) when calculating earned monthly wage arrears, and include unlawful arbitrary deductions when calculating refundable security deposits.
    - Explain the legal logic of your calculation in 'lawyer_calculation_note'.
 
-3. CAPTURE CASE-SPECIFIC NUANCES (NO FACT LEFT BEHIND):
-   - Real Indian legal disputes have unique details beyond standard slots (e.g., withheld Experience/Relieving Letter, PF/TDS not deposited, utility cutoff, cheque number & bank return memo date, e-commerce Order ID, partial payment dates, specific threats).
-   - Capture all such extra facts in 'case_nuances' (a concise summary string of additional case-specific facts and reliefs requested).
+3. BCI LL.B. DOCTRINAL, PROCEDURAL & EVIDENTIARY DIAGNOSTIC ('llb_doctrinal_analysis'):
+   - Formulate a concise 2–3 line law-school doctrinal diagnostic covering:
+     * Substantive Doctrine (e.g., Sec 73/74 ICA against penalty/forfeiture, Sec 108(m) TPA wear & tear exception, Sec 2(s) & 33C(2) ID Act workman vs. managerial forum, Sec 27 ICA void restraint on withholding relieving letter, Sec 2(7)/2(10)/2(11) CPA 2019, or Sec 138/139 NI Act presumption).
+     * Forum, Territorial Jurisdiction & Limitation Act Check (e.g., 3-year civil limitation under Limitation Act 1963 / 2-year CPA limitation under Sec 69 / 30-day NI Act Sec 138 notice window; Sec 20 CPC vs. Sec 34(2)(d) CPA home-city forum).
+     * Evidentiary Admissibility Rule (e.g., Section 63 Bharatiya Sakshya Adhiniyam, 2023 certificate for WhatsApp/Email/UPI records, or Section 10 & 70 ICA for oral agreement + bank transfer restitution).
 
-4. LEGAL SUFFICIENCY EVALUATION (THE 5 PILLARS OF AN INDIAN LEGAL NOTICE):
+4. CAPTURE CASE-SPECIFIC NUANCES (NO FACT LEFT BEHIND):
+   - Capture all extra case-specific details (withheld Relieving Letter, employment bond threats, cheque number & memo date, Order ID, utility cutoff, partial payment dates) in 'case_nuances'.
+
+5. LEGAL SUFFICIENCY EVALUATION (THE 5 PILLARS OF AN INDIAN LEGAL NOTICE):
    - Evaluate whether we have the 5 core pillars needed to issue a valid Legal Notice:
      (1) Claimant/Sender Name, (2) Opposite Party Name & City/Location, (3) Cause of Action & Timeline/Period, (4) Quantified Claim Amount in INR (stated or calculated), and (5) Evidentiary Basis.
    - If all 5 pillars are known from the conversation, fill in any remaining secondary schema fields with sensible context-inferred values so the client is never stuck in a rigid form checklist.
@@ -87,6 +95,7 @@ Return your response STRICTLY as valid JSON in this exact format:
   "claim_math_expression": "Pure arithmetic formula string using numbers and + - * / ( ) if calculation was needed, else null",
   "claim_target_field": "Name of the numeric field in extracted_facts that claim_math_expression computes, else null",
   "lawyer_calculation_note": "If you performed or updated any financial calculation or legal deduction analysis, explain the step-by-step logic here; otherwise null",
+  "llb_doctrinal_analysis": "Concise LL.B. diagnostic: (1) Substantive Doctrine, (2) Forum, Jurisdiction & Limitation Status, (3) Section 63 BSA / Evidentiary Strategy",
   "case_nuances": "Concise summary of any additional case-specific facts, breakdowns, extra reliefs requested (e.g. Relieving Letter, interest, replacement), or chronological details mentioned by the client"
 }}"""
 
@@ -148,7 +157,7 @@ def extract_facts_with_reasoning(
     recent_history: Optional[List[Dict[str, Any]]] = None
 ) -> Tuple[Dict[str, Any], Optional[str]]:
     """
-    Multi-turn, context-aware fact extraction + Neuro-Symbolic financial & legal reasoning.
+    Multi-turn, context-aware fact extraction + Neuro-Symbolic financial & LL.B. doctrinal reasoning.
     Returns (updated_facts, lawyer_calculation_note).
     """
     kb = get_kb(domain)
@@ -165,11 +174,13 @@ def extract_facts_with_reasoning(
 
     schema_description = "\n".join(schema_lines)
     history_text = _format_history(recent_history)
+    doctrinal_context = get_doctrinal_context(domain)
 
     prompt = EXTRACTION_SYSTEM_PROMPT.format(
         domain_name=kb["domain_name"],
         jurisdiction=kb.get("jurisdiction", "India"),
         schema_description=schema_description,
+        doctrinal_context=doctrinal_context,
         current_facts_json=json.dumps(_public_facts(current_facts), ensure_ascii=False, indent=2),
         history_text=history_text,
         allowed_proof_enums=json.dumps(allowed_proof_enums)
@@ -179,7 +190,7 @@ def extract_facts_with_reasoning(
     try:
         content = call_llm(
             system_prompt=prompt,
-            user_prompt=f"Latest Client Message:\n\"{new_message}\"\n\nAnalyze the full transcript + latest message, formulate any needed math expression, and return the JSON.",
+            user_prompt=f"Latest Client Message:\n\"{new_message}\"\n\nAnalyze the full transcript + latest message, formulate any needed math expression and LL.B. doctrinal diagnostic, and return the JSON.",
             temperature=0.1
         )
         if content:
@@ -191,11 +202,13 @@ def extract_facts_with_reasoning(
                 extracted = parsed["extracted_facts"]
                 calc_note = parsed.get("lawyer_calculation_note")
                 case_nuances = parsed.get("case_nuances")
+                doctrinal_analysis = parsed.get("llb_doctrinal_analysis")
                 math_expr = parsed.get("claim_math_expression")
                 target_field = parsed.get("claim_target_field")
             else:
                 extracted = parsed
                 case_nuances = None
+                doctrinal_analysis = None
                 math_expr = None
                 target_field = None
 
@@ -221,6 +234,8 @@ def extract_facts_with_reasoning(
 
             if calc_note and str(calc_note).lower() != "null":
                 merged["_calculation_note"] = str(calc_note)
+            if doctrinal_analysis and str(doctrinal_analysis).lower() != "null":
+                merged["_doctrinal_analysis"] = str(doctrinal_analysis)
             if case_nuances and str(case_nuances).lower() != "null":
                 prev_nuances = merged.get("_case_nuances", "")
                 if str(case_nuances) not in prev_nuances:
@@ -266,9 +281,8 @@ def generate_lawyer_turn_response(
     language_code: Optional[str] = None
 ) -> str:
     """
-    Dynamic, non-hardcoded Multi-Turn AI Lawyer Dialogue Engine.
-    Adapts naturally to any Indian persona, language, and dispute nuance while grounding
-    all legal citations strictly in the domain's Closed-World Statutory KB.
+    Dynamic, non-hardcoded Multi-Turn AI Lawyer Dialogue Engine equipped with
+    Bar Council of India (BCI) LL.B. Doctrinal, Procedural, and Evidentiary Reasoning.
     """
     kb = get_kb(domain)
     if not kb:
@@ -286,34 +300,36 @@ def generate_lawyer_turn_response(
 
     proof_val = str(facts.get("proof_status", ""))
     oral_risk_note = (
-        "Include a brief, practical Evidentiary Note: since their primary proof is oral/informal, advise them to preserve secondary corroborative evidence (bank/UPI statements, WhatsApp/SMS trails, call logs, or witness details) while noting that serving this Legal Notice creates a formal paper trail."
+        "Include a brief Evidentiary Strategy Note: explain how even oral/informal agreements are enforceable via Section 10 & Section 70 (Restitution / Quantum Meruit) of the Indian Contract Act, 1872 when corroborated by digital records (UPI/WhatsApp/SMS) certified under Section 63 of the Bharatiya Sakshya Adhiniyam, 2023."
         if is_complete and ("oral" in proof_val or "informal" in proof_val) else ""
     )
 
     active_calc = calculation_note or facts.get("_calculation_note")
     nuances = facts.get("_case_nuances")
+    doctrinal_diag = facts.get("_doctrinal_analysis")
+    doctrinal_context = get_doctrinal_context(domain)
 
     if is_complete:
         task_instruction = f"""CASE INTAKE STATUS: COMPLETE — All essential facts for the Legal Notice are verified!
 Your objectives for this response:
 1. ADDRESS THE CLIENT'S LATEST INPUT & SHOW ANY MATH:
    - If a calculation or breakdown was performed ({active_calc or 'None'}) or if the client asked a specific question, walk through the exact arithmetic and reasoning clearly.
-2. DELIVER GROUNDED LEGAL STANDING (OR ANSWER FOLLOW-UP WITHOUT REPETITION):
-   - Check the Conversation Transcript below. If this is the first turn where the case completed, explain their Legal Standing clearly in {target_lang} using ONLY these verified Indian legal principles and statutes:
+2. DELIVER LL.B.-GRADE GROUNDED LEGAL STANDING (OR ANSWER FOLLOW-UP WITHOUT REPETITION):
+   - Check the Conversation Transcript below. If this is the first turn where the case completed, explain their Legal Standing clearly in {target_lang} using the LL.B. Doctrinal Analysis above and ONLY these verified Indian statutes:
      Principles: {kb['grounded_legal_standing']['en']}
      Permissible Statutes: {', '.join(kb['permissible_statutes'])}
-     (Closed-World Guardrail: Do NOT invent any unverified sections or fake case precedents!)
-   - If you ALREADY explained their Legal Standing in a previous turn and the client is now asking a follow-up question or modifying a detail, answer their specific question directly without repeating your earlier speech!
+     (Briefly highlight their exact legal doctrine, forum/jurisdiction, limitation window, and how their evidence is protected under Section 63 BSA / Contract Act. Do NOT invent any unverified sections or fake case precedents!)
+   - If you ALREADY explained their Legal Standing in a previous turn and the client is now asking a follow-up question or modifying a detail, answer their specific question directly using the LL.B. Doctrinal Toolkit without repeating your earlier speech!
 3. {oral_risk_note}
-4. Point the client to their custom-drafted **Formal Legal Notice of Demand** in the Legal Notice panel (ready for PDF download and dispatch via Registered Post A.D. / Speed Post / Official Email / WhatsApp).
+4. Point the client to their custom-drafted **Formal Legal Notice of Demand** in the Legal Notice panel (ready for PDF download and dispatch via Registered Post A.D. / Speed Post / Official Email / WhatsApp under Section 27 General Clauses Act).
 5. VOICE & UX CONCISENESS: Do NOT paste the raw Legal Notice document inside this chat bubble (the UI renders the formatted Legal Notice document and PDF button automatically). Keep your spoken reply natural, sharp, and 4–6 sentences long."""
     else:
         task_instruction = f"""CASE INTAKE STATUS: IN PROGRESS (Previous lawyer turns: {turn_count}).
 Your objectives for this response:
-1. THINK & RESPOND LIKE A REAL INDIAN ADVOCATE (NO CANNED TEMPLATES!):
+1. APPLY LL.B. LEGAL REASONING TO WHAT THE CLIENT JUST SAID (NO CANNED TEMPLATES!):
    - Engage directly with what the client just said in "{user_message}".
    - If you performed any financial calculation or legal deduction analysis ({active_calc or 'None'}), state the exact numbers you computed and why.
-   - If the client asked a legal question (e.g., whether they can file a police FIR/420, what happens if the other side ignores them, or whether a deduction/policy is legal), answer it briefly using {kb['domain_name']} principles ({', '.join(kb['permissible_statutes'])}).
+   - If the client raised a doctrinal, procedural, or evidentiary concern (e.g., unregistered agreement, oral contract, employment bond, withheld relieving letter, WhatsApp proof, limitation time, or filing an FIR), answer it authoritatively using the BCI LL.B. Doctrinal Toolkit ({', '.join(kb['permissible_statutes'])}).
 2. ZERO REPETITION ACROSS TURNS (CRITICAL):
    - Read the 'Conversation Transcript So Far'.
    - NEVER repeat stock sympathy lines, greetings, or reassurances that you already said in an earlier turn. Speak with natural human continuity.
@@ -321,8 +337,14 @@ Your objectives for this response:
    - To complete the Legal Notice, we still need: {', '.join(missing_descriptions)}.
    - Ask for these organically in 1–2 conversational sentences tailored to the client's situation (do not sound like a rigid questionnaire)."""
 
-    system_prompt = f"""You are NyayaMitra, an experienced, sharp, and grounded Indian Advocate advising a client on {kb['domain_name']} ({kb.get('jurisdiction', 'India')}).
+    system_prompt = f"""You are NyayaMitra, a sharp, seasoned Indian Advocate trained in the Bar Council of India (BCI) LL.B. curriculum, advising a client on {kb['domain_name']} ({kb.get('jurisdiction', 'India')}).
 Language Directive: Respond in {target_lang}, matching the client's script and natural register.
+
+BCI LL.B. Doctrinal & Procedural Toolkit:
+{doctrinal_context}
+
+Case-Specific LL.B. Doctrinal Diagnostic:
+{doctrinal_diag or "Apply the BCI LL.B. Doctrinal Toolkit above."}
 
 Conversation Transcript So Far:
 {_format_history(recent_history)}
@@ -344,7 +366,7 @@ Financial / Legal Calculation Performed:
     try:
         reply = call_llm(
             system_prompt=system_prompt,
-            user_prompt="Generate your next natural, non-repetitive lawyer response now.",
+            user_prompt="Generate your next natural, non-repetitive, doctrinally sharp lawyer response now.",
             temperature=0.25
         )
         if reply:
@@ -386,10 +408,9 @@ def generate_clarification_response(
 
 def assemble_legal_notice(domain: str, facts: Dict[str, Any]) -> str:
     """
-    Bespoke Grounded Legal Notice Draftsman with Deterministic Caching & Fallback.
-    Synthesizes all captured facts, financial calculation breakdowns, and case-specific nuances
-    into a formal Indian Legal Notice while strictly restricting statutory citations to
-    the domain's Closed-World Permissible Statutes.
+    BCI Clinical Legal Education ('Drafting, Pleading & Conveyancing') Bespoke Legal Notice Draftsman.
+    Synthesizes all captured facts, Neuro-Symbolic math breakdowns, LL.B. doctrinal diagnostics,
+    and case nuances into an enforceable Indian Legal Notice grounded strictly in Closed-World Statutes.
     """
     kb = get_kb(domain)
     if not kb:
@@ -403,11 +424,13 @@ def assemble_legal_notice(domain: str, facts: Dict[str, Any]) -> str:
     public_facts = _public_facts(facts)
     calc_note = facts.get("_calculation_note")
     case_nuances = facts.get("_case_nuances")
+    doctrinal_diag = facts.get("_doctrinal_analysis")
+    doctrinal_context = get_doctrinal_context(domain)
 
     raw_proof = str(public_facts.get("proof_status", ""))
     readable_proof = PROOF_HUMAN_READABLE.get(raw_proof, raw_proof.replace("_", " "))
 
-    drafting_prompt = f"""You are a Senior Indian Legal Draftsman preparing a formal, enforceable pre-litigation **LEGAL NOTICE OF DEMAND** in English.
+    drafting_prompt = f"""You are a Senior Indian Advocate & Clinical Professor of 'Drafting, Pleading and Conveyancing' (BCI LL.B. Standard) preparing a formal, enforceable pre-litigation **LEGAL NOTICE OF DEMAND** in English.
 
 Dispute Category: {kb['domain_name']} ({kb.get('jurisdiction', 'India')})
 Date of Notice: {current_date}
@@ -416,27 +439,33 @@ Verified Structured Case Facts:
 {json.dumps(public_facts, ensure_ascii=False, indent=2)}
 
 Evidentiary Basis Description: {readable_proof}
-Financial Calculation / Breakdown Note: {calc_note or "Use the principal claim amount in Verified Facts"}
+Neuro-Symbolic Financial Calculation Breakdown: {calc_note or "Use the principal claim amount in Verified Facts"}
+LL.B. Doctrinal, Forum & Evidentiary Analysis: {doctrinal_diag or "Apply standard domain doctrines"}
 Additional Case-Specific Nuances & Grievances: {case_nuances or "None"}
+
+BCI LL.B. Doctrinal Reference for Drafting:
+{doctrinal_context}
 
 CLOSED-WORLD STATUTORY GROUNDING (CRITICAL):
 You may ONLY cite from these verified Indian statutes:
 {json.dumps(kb['permissible_statutes'], indent=2)}
 Do NOT invent any fake case laws, phantom sections, or unrelated Acts!
 
-DRAFTING REQUIREMENTS:
+DRAFTING, PLEADING & CONVEYANCING (DPC) REQUIREMENTS:
 1. Format the document cleanly in Markdown as a formal Indian Legal Notice:
-   - Header: `**FORMAL LEGAL NOTICE OF DEMAND**` and `*(Sent via Registered Post A.D. / Speed Post / Registered Email / WhatsApp)*`
+   - Top Line: `**WITHOUT PREJUDICE**`
+   - Header: `**FORMAL LEGAL NOTICE OF DEMAND**` and `*(Dispatched via Registered Post A.D. / Speed Post / Registered Email / WhatsApp under Section 27 of the General Clauses Act, 1897)*`
    - `**Date:** {current_date}`
    - `**To:**` (Opposite party name and address/location from facts)
-   - `**From (Claimant / Sender):**` (Claimant name and role/location from facts)
-   - `**SUBJECT:**` (Bold, uppercase subject line stating the exact nature of demand and exact amount in Rs.)
-2. Chronological Numbered Paragraphs (`1.`, `2.`, `3.`, `4.`, `5.`, `6.`):
+   - `**From (Claimant / Noticee Sender):**` (Claimant name and role/location from facts)
+   - `**SUBJECT:**` (Bold, uppercase subject line stating the exact nature of demand, statutory provisions invoked, and exact claim amount in Rs.)
+2. Chronological Numbered Paragraphs (`1.`, `2.`, `3.`, `4.`, `5.`, `6.`, `7.`):
    - Tailor the factual narrative specifically to this client's case!
-   - If there is a financial/CTC/deposit/invoice breakdown in 'Financial Calculation / Breakdown Note' or specific grievances in 'Additional Case-Specific Nuances', explicitly include that exact breakdown and those specific reliefs in the numbered paragraphs!
-   - Cite the applicable statutes from the Closed-World list above accurately.
-   - Include a clear **15-Day Statutory Cure / Demand Clause** specifying the exact amount in INR (and any non-monetary relief like Relieving Letter / replacement if applicable).
-   - Include a formal **Consequences of Non-Compliance Clause** warning of civil/statutory proceedings (e.g., Summary Suit under Order 37 CPC / Labour Commissioner / Consumer Commission / Sec 138 NI Act as applicable) with 18% p.a. interest and litigation costs *"at your sole risk as to costs and consequences."*
+   - Explicitly include the exact mathematical calculation breakdown from 'Neuro-Symbolic Financial Calculation Breakdown' and any extra reliefs from 'Additional Case-Specific Nuances' (e.g., Relieving Letter, unvested perk exclusion, arbitrary painting deduction rebuttal, cheque number & return memo, or Order ID).
+   - Invoke the applicable substantive doctrines (e.g., Section 70/73/74 Contract Act, Section 108(m) Transfer of Property Act reasonable wear & tear, Section 2(s)/33C(2) ID Act or Payment of Wages Act, Section 2(7)/2(10)/2(11)/34(2)(d) Consumer Protection Act, or Section 138/139 NI Act).
+   - Explicitly state that all digital/electronic records (WhatsApp, emails, UPI/bank statements) are preserved for production with a **Section 63 Certificate under the Bharatiya Sakshya Adhiniyam, 2023**.
+   - Include an unequivocal **15-Day Statutory Cure / Demand Clause** specifying the exact principal amount in INR plus 18% p.a. interest (Section 34 CPC) and any non-monetary relief.
+   - Include a formal **Jurisdiction & Consequences of Non-Compliance Clause** identifying the exact competent Forum/Court and warning of civil/statutory proceedings *"at your sole risk as to costs and consequences."*
 3. Sign-off with the Claimant's name at the bottom. Output ONLY the Legal Notice markdown text."""
 
     try:

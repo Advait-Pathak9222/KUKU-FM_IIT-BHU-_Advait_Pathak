@@ -70,10 +70,11 @@ MONEY_RECOVERY_KB = {
     },
 
     "permissible_statutes": [
-        "Indian Contract Act, 1872 (Section 73 - Compensation for Breach of Contract)",
-        "Code of Civil Procedure, 1908 (Order 37 - Summary Suit for Recovery of Debt)",
-        "Negotiable Instruments Act, 1881 (Section 138 - Dishonour of Cheque for Insufficiency of Funds)",
-        "Micro, Small and Medium Enterprises Development (MSMED) Act, 2006 (Sections 15 & 16 - Delayed Payment to Vendors)"
+        "Indian Contract Act, 1872 (Sections 70 & 73 - Breach of Contract & Quantum Meruit / Restitution)",
+        "Code of Civil Procedure, 1908 (Order 37 - Summary Suit for Recovery of Debt; Section 20 - Jurisdiction; Section 34 - Interest)",
+        "Negotiable Instruments Act, 1881 (Section 138 - Dishonour of Cheque; Section 139 - Presumption of Debt; Section 142 - 30-Day Timeline; Section 143A - 20% Interim Compensation)",
+        "Micro, Small and Medium Enterprises Development (MSMED) Act, 2006 (Sections 15, 16 & 18 - Compound Interest at 3x RBI Rate & Samadhaan Council)",
+        "Bharatiya Sakshya Adhiniyam, 2023 (Section 63 - Electronic Evidence Certificate for UPI/WhatsApp/Emails) & Limitation Act, 1963 (3-Year Limitation)"
     ],
 
     "legal_notice_template": (

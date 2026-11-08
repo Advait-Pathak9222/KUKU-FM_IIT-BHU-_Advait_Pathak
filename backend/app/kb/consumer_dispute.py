@@ -70,10 +70,11 @@ CONSUMER_DISPUTE_KB = {
     },
 
     "permissible_statutes": [
-        "Consumer Protection Act, 2019 (Section 2(10) - Defect, Section 2(11) - Deficiency in Service, Section 2(47) - Unfair Trade Practice)",
-        "Consumer Protection Act, 2019 (Section 35 - Jurisdiction of District Consumer Disputes Redressal Commission)",
+        "Consumer Protection Act, 2019 (Section 2(7) - Consumer & Self-Employment Livelihood; Section 2(10) - Defect; Section 2(11) - Deficiency in Service; Section 2(47) - Unfair Trade Practice)",
+        "Consumer Protection Act, 2019 (Section 34(2)(d) - Jurisdiction where Consumer Resides; Section 35 - e-Daakhil Complaint; Section 69 - 2-Year Limitation Period)",
         "Consumer Protection (E-Commerce) Rules, 2020",
-        "Indian Contract Act, 1872 (Section 73 - Compensation for Loss or Damage Caused by Breach of Contract)"
+        "Indian Contract Act, 1872 (Sections 70, 73 & 74 - Breach of Contract & Restitution)",
+        "Bharatiya Sakshya Adhiniyam, 2023 (Section 63 - Electronic Evidence Certificate for Invoices/Emails/Payment Logs)"
     ],
 
     "legal_notice_template": (
