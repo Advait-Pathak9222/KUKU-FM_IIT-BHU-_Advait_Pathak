@@ -1,224 +1,223 @@
 # ⚖️ NyayaMitra (न्यायमित्र) — Conversational AI Lawyer for Everyday Bharat
 
 > **Kuku FM Take-Home Assignment | AI Generalist Role**  
-> **Candidate:** Advait Pathak  
+> **Candidate:** Advait Pathak (IIT BHU)  
 > **Problem Chosen:** Problem 2 — Build an AI Lawyer  
-> **Live Prototype:** Deployable to Streamlit Community Cloud / Local Run  
-> **GitHub Repository:** [https://github.com/Advait-Pathak9222/KUKU-FM_IIT-BHU-_Advait_Pathak](https://github.com/Advait-Pathak9222/KUKU-FM_IIT-BHU-_Advait_Pathak)
+> **Live Prototype:** [https://kuku-fm-iit-bhu-advait-pathak.streamlit.app](https://kuku-fm-iit-bhu-advait-pathak.streamlit.app)  
+> **GitHub Repository:** [https://github.com/Advait-Pathak9222/KUKU-FM_IIT-BHU-_Advait_Pathak](https://github.com/Advait-Pathak9222/KUKU-FM_IIT-BHU-_Advait_Pathak)  
+> **Solution Document (2-Page PDF):** [SOLUTION_DOC.pdf](SOLUTION_DOC.pdf)  
+> **Raw Evaluation Outputs:** [raw_outputs/](raw_outputs/)
 
+[![Live Prototype](https://img.shields.io/badge/Live%20Prototype-Streamlit%20Cloud-FF4B4B.svg?style=for-the-badge&logo=streamlit)](https://kuku-fm-iit-bhu-advait-pathak.streamlit.app)
+[![Solution Document](https://img.shields.io/badge/Solution%20Doc-2--Page%20PDF-B83A2A.svg?style=for-the-badge&logo=adobeacrobatreader)](SOLUTION_DOC.pdf)
+[![GitHub Repo](https://img.shields.io/badge/Source%20Code-GitHub-181717.svg?style=for-the-badge&logo=github)](https://github.com/Advait-Pathak9222/KUKU-FM_IIT-BHU-_Advait_Pathak)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688.svg)](https://fastapi.tiangolo.com/)
-[![Streamlit](https://img.shields.io/badge/Frontend-Streamlit-FF4B4B.svg)](https://streamlit.io/)
 [![Sarvam AI](https://img.shields.io/badge/AI%20Suite-Sarvam%20AI-6366F1.svg)](https://www.sarvam.ai/)
-[![Zero Hallucination](https://img.shields.io/badge/Guardrails-Statute%20Whitelisted-success.svg)](#-anti-hallucination--legal-grounding)
+[![Guardrails](https://img.shields.io/badge/Guardrails-Statute%20Whitelisted-success.svg)](#-5-layer-neuro-symbolic-architecture)
 
 ---
 
-## 🎯 Executive Summary & Problem Framing
+## 📋 Quick Links for Evaluators & Reviewers
 
-In India, over **90% of ordinary citizens** never approach the formal legal system for everyday civil grievances—such as **unreturned rental security deposits** or **withheld wages and severance**. For a tenant or junior employee in tier-2/tier-3 Bharat, a single advocate consultation costs ₹2,500 – ₹5,000 (often 20% to 50% of the disputed amount), legal jargon is intimidating, and drafting formal notices feels insurmountable.
-
-While general-purpose LLMs struggle with vernacular code-mixing and dangerously hallucinate criminal sections (*e.g., advising IPC 420 for simple rent disputes*), **NyayaMitra** is purposefully engineered for everyday Indian citizens:
-
-1. 🎙️ **Speaks & Listens in Indic Dialects:** Supports vernacular voice notes with natural code-mixing (Hindi, Marathi, Hinglish, English loanwords) powered by Sarvam AI (`saaras:v3` STT & `bulbul:v3` TTS).
-2. 🛡️ **Zero-Hallucination Statute Whitelist:** Strict architectural separation between probabilistic entity extraction and deterministic legal citations (*Section 73 Indian Contract Act, Model Tenancy Act, Order 37 CPC*).
-3. ⚖️ **Mandatory Legal Escalation:** Continuously screens every turn (Roman & Devanagari scripts) for criminal offenses, domestic violence, and matrimonial disputes, halting civil drafting and serving statutory helpline numbers (**NALSA 15100**, **1091**).
-4. 📄 **Court-Ready Actionable Paperwork:** Generates and downloads a formal **Legal Notice of Demand** in both Markdown and crash-proof PDF with a 15-day cure period.
-5. 🥊 **Negotiation Roleplay Coach:** Roleplays the stubborn Landlord or defensive HR Manager so citizens can practice arguing their case, paired with live tactical coaching tips.
-6. ⚙️ **Hot-Swappable Model Router:** Swap dynamically between `sarvam-105b-conversations`, `OpenAI`, `Gemini`, or `Anthropic Claude` via `.env` or the UI sidebar during live evaluations.
-
----
-
-## 🌐 Live Cloud Deployment (For Evaluators & Judges)
-
-NyayaMitra features a **Hybrid Dispatcher Architecture**: it seamlessly runs as a distributed FastAPI microservice locally, or **completely self-contained in-process** when deployed to the cloud. Evaluators do not need to maintain any local servers to test the app.
-
-### Deploying to Streamlit Community Cloud (60 Seconds)
-
-1. Fork or open the GitHub repository:  
-   `https://github.com/Advait-Pathak9222/KUKU-FM_IIT-BHU-_Advait_Pathak`
-2. Go to [share.streamlit.io](https://share.streamlit.io/) and click **New App**.
-3. Select:
-   * **Repository:** `Advait-Pathak9222/KUKU-FM_IIT-BHU-_Advait_Pathak`
-   * **Branch:** `main`
-   * **Main file path:** `app.py`
-4. Under **Advanced Settings > Secrets**, paste your Sarvam AI credentials:
-   ```toml
-   SARVAM_API_KEY = "your_sarvam_api_key_here"
-   USE_MOCK_SARVAM = "False"
-   ```
-5. Click **Deploy**. Streamlit Cloud automatically provides an HTTPS endpoint (e.g. `https://nyayamitra.streamlit.app`) with native browser microphone permissions for instant mobile and desktop voice testing.
-
----
-
-## 🏗️ System Architecture & Multimodal Pipeline
-
-```
-                                ┌─────────────────────────────────────────┐
-                                │        Citizen User (Mobile / Web)      │
-                                └────────────────────┬────────────────────┘
-                                                     │ Voice (Audio WAV/MP3) or Text
-                                                     ▼
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│ STREAMLIT FRONTEND (Option A UX: Latency Masking + Live Reasoning Sidebar)             │
-│                                                                                        │
-│   • MD5 Audio De-duplication Cache (Eliminates recursive audio loop glitches)           │
-│   • Hybrid Dispatcher: HTTP Microservice ──[fallback]──► In-Process Execution         │
-└────────────────────────────────────┬───────────────────────────────────────────────────┘
-                                     │
-                                     ▼
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│ PERCEPTION & SAFETY GUARDRAILS                                                         │
-│                                                                                        │
-│   1. Sarvam Saaras STT (`saaras:v3`): Indic Speech-to-Text & Dialect Auto-Detection     │
-│   2. Deterministic Safety Triage: Regex + Semantic Check for Out-of-Scope Risks        │
-│      ├─ If Criminal / Domestic Abuse / Dowry ──► Immediate NALSA 15100 Escalation      │
-│      └─ If Tenancy / Salary Grievance        ──► Proceed to Fact Gathering             │
-└────────────────────────────────────┬───────────────────────────────────────────────────┘
-                                     │
-                                     ▼
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│ COGNITIVE REASONING & EXTRACTION MACHINE                                               │
-│                                                                                        │
-│   • Sarvam-105B Reasoning: Conversational extraction with regional code-mixing         │
-│   • Missing-Variable Audit: Evaluates 5-part timeline completeness against schema      │
-│   • Evidence Risk Handler: Handles oral agreements without deadlocking pipeline         │
-│   • Persistent State: Atomic upsert into SQLite (`ai_lawyer.db`)                       │
-└────────────────────────────────────┬───────────────────────────────────────────────────┘
-                                     │
-                ┌────────────────────┴────────────────────┐
-                ▼                                         ▼
-┌───────────────────────────────┐       ┌────────────────────────────────────────────────┐
-│   IF FACTS INCOMPLETE (< 5)   │       │   IF COMPLETE (All 5 Essential Facts Verified)  │
-│                               │       │                                                │
-│ • Targeted Indic Follow-up    │       │ • Deterministic Legal Notice Assembly          │
-│ • Sarvam Bulbul TTS Synthesis │       │ • Whitelisted Statutes (Sec 73 Contract Act)   │
-│ • Dynamic Audio Playback      │       │ • Court-Ready FPDF2 Vector PDF Download        │
-└───────────────────────────────┘       └────────────────────────────────────────────────┘
-```
-
----
-
-## 🛡️ Anti-Hallucination & Legal Grounding
-
-LLM hallucinations in legal applications can lead to severe real-world harm. NyayaMitra enforces a strict boundary between probabilistic generation and deterministic legal enforcement:
-
-| Component | Responsibility | Guardrail Mechanism |
+| Deliverable | Description | Link |
 | :--- | :--- | :--- |
-| **Entity Extraction** | Extracting names, dates, amounts, deductions, evidence | LLM operates solely on user statements; never infers missing numbers. |
-| **Statute Whitelist** | Legal citations and statutory grounds | **Zero LLM citation generation.** Bound strictly to vetted statutory templates: *Section 73 Indian Contract Act 1872*, *Model Tenancy Act principles*, *Order 37 CPC*. |
-| **Evidentiary Deadlocks** | Tenant lacks written agreement / cash paid | System marks `oral_agreement_only`, explains legal risk transparently, and proceeds without deadlocking. |
-| **Mandatory Escalation** | Criminal violence, matrimonial, domestic abuse | Immediate pipeline halt. LLM drafting disabled. Free legal aid helplines provided (**NALSA: 15100**, **Women's Helpline: 1091**). |
+| **🚀 Live Prototype** | Fully deployed on Streamlit Community Cloud. In-process backend, live browser microphone recording, Sarvam STT/TTS, AST claim math, live IndianKanoon precedent search, and PDF generation. | [**Open Live App**](https://kuku-fm-iit-bhu-advait-pathak.streamlit.app) |
+| **📄 Solution Document** | Exact 2-page executive solution document with high-density system architecture flow diagram, unit economics, evaluation matrix, and failure analyses. | [**View SOLUTION_DOC.pdf**](SOLUTION_DOC.pdf) |
+| **📂 Raw Outputs Folder** | Unedited raw JSON conversation traces, extracted fact states, and drafted legal notices across all 11 test scenarios. | [**Browse raw_outputs/**](raw_outputs/) |
+| **🎥 Video Demo Script** | Step-by-step presentation script in spoken Roman Hindi used for the 5-minute showcase video. | [**View DEMO_VIDEO_SCRIPT.pdf**](DEMO_VIDEO_SCRIPT.pdf) |
 
 ---
 
-## 💰 Unit Economics & Real-World Production Scale
+## 🎯 Problem Framing & The "Everyday Bharat" Reality
 
-Kuku FM explicitly evaluates submissions on *"what it costs at real-world volume and how it holds up at scale"*.
+In India, over **90% of ordinary citizens** never approach a lawyer for everyday civil grievances:
+- Landlords arbitrarily withholding ₹20,000 – ₹80,000 rental deposits.
+- Startups withholding 2–3 months of fixed salary under threats of 2-year service bonds.
+- Refusals to replace defective electronics under the Consumer Protection Act.
+- Dishonoured cheques for freelance or small business loans.
 
-### 1. Cost per Case Resolved (50 Paise per Citizen)
+A formal advocate consultation costs **₹2,500 – ₹5,000** (often 20% to 50% of the disputed sum), legal English jargon is intimidating, and drafting a proper legal notice is out of reach. Regional-language speakers explain their problem in long, emotionally charged voice notes rather than structured forms.
 
-| Pipeline Step | Provider & Model | Workload / Token Budget | Cost (INR) |
-| :--- | :--- | :--- | :--- |
-| **Voice Perception** | Sarvam Saaras (`saaras:v3`) | ~20s Indic audio ingestion + dialect detection | ₹0.15 |
-| **Cognitive Extraction** | Sarvam-105B-Conversations | ~1,200 tokens across 2 conversational turns | ₹0.20 |
-| **Spoken Advisory** | Sarvam Bulbul (`bulbul:v3`) | ~15s synthesized Indic audio response | ₹0.15 |
-| **Notice Generation & PDF** | Python Core (Deterministic) | Slot-filling + FPDF2 rendering on local CPU | ₹0.00 |
-| **Total Cost per Case** | **End-to-End Civil Pipeline** | **Complete Audio Consultation + Verified Notice** | **~₹0.50** |
-
-> **Economic Impact:** Compared to a traditional advocate consultation (₹2,500 – ₹5,000), NyayaMitra achieves a **99.98% cost reduction**, transforming legal recourse into an affordable 50-paise utility for Bharat.
-
-### 2. Infrastructure at 100,000 Monthly Grievance Scale
-
-* **Stateless Compute:** FastAPI services run containerized (Docker on AWS ECS / GCP Cloud Run) with CPU auto-scaling (100 concurrent requests per node).
-* **Database Transition:** The local SQLite storage is architected as an atomic document-state store; transitioning to Amazon Aurora PostgreSQL (or Supabase) requires swapping the connection string, managed with PgBouncer connection pooling.
-* **Safety Ceilings:** Sessions are hard-capped at 4 clarification turns to prevent token runaway costs on uncooperative inputs.
-* **Monthly Run-Rate for 100,000 Citizens:**
-  * Container Compute (2–4 vCPU nodes): ~$80/month
-  * Managed Database (Postgres): ~$50/month
-  * Sarvam AI API Volume (100,000 cases × ₹0.50): ₹50,000 (~$600/month)
-  * **Total Run-Rate: ~$730 / month (~₹61,000) to serve 100,000 Indian citizens.**
+### Why Generalist LLMs Fail (And What NyayaMitra Solves):
+1. **Hallucinated Criminal Sections:** General chatbots reach for *IPC 420 (Cheating)* or criminal arrest for simple rent disputes. NyayaMitra enforces a **deterministic statute whitelist** (*Section 73 ICA, Section 108(m) TPA, CPA 2019, Section 138 NI Act*).
+2. **Arithmetic Incompetence:** LLMs consistently fail multi-turn wage calculations (e.g., miscalculating ₹18L CTC with ₹12L fixed over 2 unpaid months as ₹95,000 instead of ₹2,00,000). NyayaMitra isolates all math into a **restricted Python AST evaluator (`_safe_eval_math`)**.
+3. **Absence of Procedural Grounding:** NyayaMitra applies **7 Bar Council of India (BCI) LL.B. curriculum doctrines**, including Section 63 *Bharatiya Sakshya Adhiniyam, 2023 (BSA)* electronic evidence certificates for WhatsApp and UPI screenshots.
+4. **Calibrated Case Precedents:** Evaluates grievance severity (0–1 score). For severe matters ($\ge 0.60$), it launches a **live IndianKanoon.org web search agent** to ground demand notices in Supreme Court authorities.
+5. **Zero-Tolerance Safety Escalation:** Criminal violence, domestic abuse, dowry harassment, divorce, and child custody are strictly halted with statutory helplines (**NALSA 15100**, **Women's Helpline 1091**).
 
 ---
 
-## 🧪 Evaluation Suite & Test Results
+## 🏗️ 5-Stage Neuro-Symbolic Architecture
 
-The system was evaluated against **8 intentional, messy, real-world conversational scenarios** (unedited test outputs available in [`raw_outputs/`](raw_outputs/)):
+NyayaMitra strictly decouples **probabilistic language understanding** from **deterministic legal logic and arithmetic**:
 
-| Test ID | Scenario Description | Domain | Complete? | Escalation? | Facts | Outcome |
-| :--- | :--- | :--- | :---: | :---: | :---: | :--- |
-| **TC_01** | Rental Deposit — Vague Hindi Story | `rental_deposit` | ❌ | No | 1 | Follow-up for deposit & address |
-| **TC_02** | Rental Deposit — Dense Hinglish (Bangalore 2BHK) | `rental_deposit` | ✅ | No | 8 | 📄 Legal Notice Drafted |
-| **TC_03** | Rental Deposit — Bogus Damage Deduction (Pune) | `rental_deposit` | ✅ | No | 8 | 📄 Legal Notice Drafted |
-| **TC_04** | Rental Deposit — Oral Agreement & Cash (Deadlock Test) | `rental_deposit` | ✅ | No | 8 | 📄 Evidentiary Warning + Notice |
-| **TC_05** | Unpaid Salary — Emotional Rant & IPC 420 Confusion | `unpaid_salary` | ✅ | No | 8 | 📄 Legal Notice Drafted |
-| **TC_06** | Unpaid Salary — Resigned Full & Final Delay (Gurugram) | `unpaid_salary` | ✅ | No | 8 | 📄 Legal Notice Drafted |
-| **TC_07** | Unpaid Salary — Missing Corporate Entity Details | `unpaid_salary` | ❌ | No | 3 | Targeted follow-up for employer name |
-| **TC_08** | Out of Scope — Domestic Violence & Dowry Harassment | `out_of_scope` | ❌ | 🚨 Yes | 0 | **Halted:** NALSA 15100 helpline |
+```
+                               ┌────────────────────────────────────────────────────────┐
+                               │           Citizen (Voice Note or Text in Hindi/Hinglish)│
+                               └───────────────────────────┬────────────────────────────┘
+                                                           │
+                                                           ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 1. MULTIMODAL INTAKE & SESSION STATE STORE                                                                              │
+│    • Sarvam Saaras (`saaras:v3`): Indic Speech-to-Text with auto-detected code-mixing (11 languages)                    │
+│    • FastAPI + SQLite Persistence: Atomic session state, preserving full transcript history across turns               │
+└──────────────────────────────────────────────────────────┬──────────────────────────────────────────────────────────────┘
+                                                           │
+                                                           ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 2. TRIAGE & MANDATORY SAFETY GUARDRAIL                                                                                  │
+│    • Domain Classifier: Routes to Rental Deposit, Unpaid Salary, Consumer Dispute, or Money Recovery (NI Act 138)       │
+│    • 🛑 Zero-Tolerance Guardrail: If Criminal / Domestic Violence / Dowry / Custody detected:                           │
+│      └─► Halts automated drafting immediately ──► Serves NALSA (15100), Women's Helpline (1091), or 112               │
+└──────────────────────────────────────────────────────────┬──────────────────────────────────────────────────────────────┘
+                                                           │
+                                                           ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 3. NEURO-SYMBOLIC REASONING CORE                                                                                        │
+│    • Conversational Extraction: `sarvam-105b-conversations` extracts structured case variables                          │
+│    • Deterministic AST Calculator (`_safe_eval_math`): Evaluates arithmetic formulas e.g. `1200000 / 12 * 2`            │
+│    • 7 LL.B. Doctrinal Engines: ICA (Sec 10/27/70/73/74), TPA 108(m), ID Act 2(s)/33C(2), CPA 2019, NI 138, CPC, BSA  │
+│    • Completeness Gate: If facts missing, asks ≤ 2 targeted follow-ups (zero repetitive sympathy scripts)               │
+└──────────────────────────────────────────────────────────┬──────────────────────────────────────────────────────────────┘
+                                                           │
+                                                           ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 4. CALIBRATED SEVERITY GATE & LIVE RAG PRECEDENT AGENT                                                                  │
+│    • Severity Gate (0–1): Evaluates claim quantum, coercion (bonds, withheld relieving letters), and legal friction     │
+│    • If Score ≥ 0.60 (Severe): Live IndianKanoon.org web search (`doctypes:judgments`) + 5 SC Landmark Anchors         │
+│    • If Score < 0.60 (Routine): Direct fast-path (< 2 seconds) bypassing external web overhead                          │
+└──────────────────────────────────────────────────────────┬──────────────────────────────────────────────────────────────┘
+                                                           │
+                                                           ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 5. ACTIONABLE PAPERWORK & ADVERSARIAL PRACTICE DOJO                                                                     │
+│    • Bespoke Legal Notice of Demand: Slot-filled statutory template + judicial precedents (PDF & Markdown)              │
+│    • Spoken Advisory: Sarvam Bulbul (`bulbul:v3`) regional Indic voice guidance                                        │
+│    • Voice Role-Play Dojo: Simulates stubborn landlord or HR manager; new facts revealed dynamically sync back to state │
+└─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
 
-To reproduce the automated evaluation suite:
+---
+
+## 🏛️ The 7 BCI LL.B. Syllabus Doctrines Embedded in Code
+
+| Subject Pillar | Statutes & Sections | Practical Legal Purpose in NyayaMitra |
+| :--- | :--- | :--- |
+| **Law of Contract** | ICA 1872: Sec 10, 27, 70, 73, 74 | Voids illegal employment bonds/non-competes (Sec 27); quantifies actual damages vs. penal forfeitures (*Fateh Chand* & *Kailash Nath*). |
+| **Property & Tenancy Law** | TPA 1882: Sec 108(m); Model Tenancy | Rebuts arbitrary painting/deep-cleaning deductions under "reasonable wear and tear"; accommodates unwritten leases without deadlock. |
+| **Labour & Industrial Law** | ID Act 1947: Sec 2(s), 33C(2); Wages Act | Distinguishes individual workmen from managerial staff; cites *Central Inland Water Transport* against unconscionable termination clauses. |
+| **Consumer Protection** | CPA 2019: Sec 2(7), 2(10), 34(2)(d) | Identifies product defects and unfair trade practices; invokes e-Daakhil filing from the consumer's home city (*Pioneer Urban*). |
+| **Negotiable Instruments** | NI Act 1881: Sec 138, 139, 143A | Issues statutory 15-day notice of demand post-cheque bounce; establishes statutory presumption of debt (*Rangappa v. Sri Mohan*). |
+| **Civil Procedure & Limitation** | CPC 1908: Order 37; Limitation Act 1963 | Warns respondents of summary suit procedures with 3-year commercial debt limitation periods. |
+| **Law of Evidence** | Bharatiya Sakshya Adhiniyam, 2023: Sec 63 | Formulates Section 63 electronic evidence conditions for admitting WhatsApp chats, UPI screenshots, and call logs into evidence. |
+
+---
+
+## 🧪 Comprehensive Evaluation Suite (11 Test Cases)
+
+NyayaMitra was tested on **11 multi-turn, noisy, vernacular test scenarios** covering every civil recovery domain and safety edge cases. All unedited raw JSON state snapshots, multi-turn dialogue histories, and generated Legal Notices are committed in [`raw_outputs/`](raw_outputs/):
+
+| Test ID | Scenario Description | Detected Domain | Complete? | Severity | Precedents Retrieved | Notice Generated |
+| :--- | :--- | :--- | :---: | :---: | :---: | :---: |
+| `TC_01` | Rental Deposit — Vague Hindi Story | `rental_deposit` | ❌ *(Needs facts)* | 0.40 | Fast-Path | Follow-up Turn |
+| `TC_02` | Rental Deposit — Dense Hinglish (Bangalore 2BHK) | `rental_deposit` | ✅ | 0.50 | Fast-Path | 📄 Yes |
+| `TC_03` | Rental Deposit — Bogus Damage Deduction (Pune) | `rental_deposit` | ✅ | 0.50 | Fast-Path | 📄 Yes |
+| `TC_04` | Rental Deposit — Oral Agreement & Cash (Deadlock Test) | `rental_deposit` | ✅ | 0.55 | Fast-Path | 📄 Yes (Evidentiary Warning) |
+| `TC_05` | Unpaid Salary — Emotional Rant & IPC 420 Myth (Noida) | `unpaid_salary` | ✅ | 0.65 | Live IndianKanoon | 📄 Yes |
+| `TC_06` | Unpaid Salary — Resigned Full & Final Delay (Gurugram) | `unpaid_salary` | ✅ | 0.70 | Live IndianKanoon | 📄 Yes |
+| `TC_07` | Unpaid Salary — Incomplete Employer Details | `unpaid_salary` | ❌ *(Needs facts)* | 0.40 | Fast-Path | Follow-up Turn |
+| `TC_08` | Domestic Violence & Dowry Harassment (Safety Guardrail) | `out_of_scope` | ❌ *(Halted)* | N/A | None | 🚨 **HALTED: NALSA 15100** |
+| `TC_09` | Unpaid Salary — CTC Math (`₹18L CTC, ₹12L fixed`) & Bond | `unpaid_salary` | ✅ | **0.85** | *Central Inland Water Transport* | 📄 **Yes (`₹2,00,000` exact)** |
+| `TC_10` | Consumer Dispute — Defective EV Battery & Warranty Refusal | `consumer_dispute` | ✅ | 0.50 | *Pioneer Urban* | 📄 Yes (e-Daakhil) |
+| `TC_11` | Money Recovery — Bounced Loan Cheque (`NI Act Sec 138`) | `money_recovery` | ✅ | **0.85** | *Rangappa v. Sri Mohan* | 📄 Yes (15-Day Demand) |
+
+To run the automated test suite locally:
 ```bash
 python generate_raw_outputs.py
 ```
 
 ---
 
-## 🚀 Quickstart & Local Setup
+## 💰 Unit Economics & Real-World Production Scale
 
-### 1. Installation
-```bash
-git clone https://github.com/Advait-Pathak9222/KUKU-FM_IIT-BHU-_Advait_Pathak.git
-cd KUKU-FM_IIT-BHU-_Advait_Pathak
-pip install -r requirements.txt
-```
+| Pipeline Step | Provider & Model | Average Workload | Cost (INR) |
+| :--- | :--- | :--- | :--- |
+| **Voice Transcription** | Sarvam Saaras (`saaras:v3`) | ~20 seconds of audio intake | ₹0.15 |
+| **Reasoning, Extraction, & Drafting** | `sarvam-105b-conversations` | ~1,800 tokens across turns | ₹0.25 |
+| **Precedent Web Search** | IndianKanoon HTTP + Python AST | Only when severity score $\ge 0.60$ | ₹0.00 |
+| **Spoken Advisory** | Sarvam Bulbul (`bulbul:v3`) | ~15 seconds synthesized audio | ₹0.15 |
+| **Legal Notice PDF Generation** | Python FPDF2 Core (Vector) | Local CPU rendering | ₹0.00 |
+| **Total Cost per Case** | **End-to-End Civil Consultation** | **Full Audio Intake + Notice PDF** | **~₹0.55** |
 
-### 2. Configuration
-Create a `.env` file in the root directory:
-```ini
-SARVAM_API_KEY=your_sarvam_api_key_here
-USE_MOCK_SARVAM=False   # Set True to test offline with zero API credit consumption
-```
+> **Economic Verdict:** At **₹0.55 per grievance**, NyayaMitra is **99.98% cheaper** than a traditional advocate consultation (₹2,500 – ₹5,000), making access to justice accessible to any smartphone user in India.
 
-### 3. Run Application
-Run the Streamlit frontend (runs seamlessly in standalone mode or with backend):
-```bash
-streamlit run app.py
-```
-Open `http://localhost:8501` in your browser.
-
-*(Optional)* Run the FastAPI microservice in a separate terminal:
-```bash
-uvicorn backend.app.main:app --port 8000
-```
-Interactive Swagger API documentation: `http://127.0.0.1:8000/docs`
+### Monthly Run-Rate for 100,000 Grievances
+- **Compute:** Containerized FastAPI on AWS ECS / GCP Cloud Run: ~$80/month
+- **Database:** Managed Postgres on Supabase / Neon: ~$50/month
+- **Sarvam AI API Volume:** 100,000 cases × ₹0.55 = ₹55,000 (~$660/month)
+- **Total Run-Rate:** **~$790 / month (~₹66,000)** to serve 100,000 citizens.
 
 ---
 
-## 📂 Project Structure
+## 💻 Optional: Running Locally / Self-Hosting
+
+The live prototype is already hosted on [Streamlit Community Cloud](https://kuku-fm-iit-bhu-advait-pathak.streamlit.app). To run the project locally on your machine:
+
+### 1. Clone & Install
+```bash
+git clone https://github.com/Advait-Pathak9222/KUKU-FM_IIT-BHU-_Advait_Pathak.git
+cd KUKU-FM_IIT-BHU-_Advait_Pathak
+python3 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 2. Configure Environment
+Create a `.env` file in the root directory:
+```ini
+SARVAM_API_KEY=your_sarvam_api_key_here
+LLM_PROVIDER=sarvam
+LLM_MODEL=sarvam-105b-conversations
+USE_MOCK_SARVAM=False   # Set True to run offline without consuming API credits
+```
+
+### 3. Launch App
+```bash
+streamlit run app.py
+```
+Open `http://localhost:8501` in your browser. (Root `app.py` automatically initializes SQLite and runs the state machine in-process if a separate backend is not running).
+
+*(Optional Microservice Mode)* Run FastAPI backend on port 8000:
+```bash
+uvicorn backend.app.main:app --port 8000
+```
+FastAPI interactive Swagger docs: `http://localhost:8000/docs`
+
+---
+
+## 📂 Repository Structure
 
 ```
-├── app.py                      # Root Streamlit app (with hybrid in-process cloud fallback)
+├── app.py                      # Root Streamlit app (with in-process cloud fallback)
 ├── .streamlit/
-│   ├── config.toml             # Streamlit Cloud production styling & headless settings
-│   └── secrets.toml.example    # Cloud secrets configuration reference
+│   ├── config.toml             # Headless server & typography configurations
+│   └── secrets.toml.example    # Cloud secrets template reference
 ├── backend/
 │   └── app/
 │       ├── main.py             # FastAPI routes (/chat, /audio-chat, /notice/{id}/pdf)
 │       ├── database.py         # SQLite persistence (chat_history & case_state)
-│       ├── config.py           # Configuration & credit-protection mocks
+│       ├── config.py           # Config with automatic st.secrets cloud fallback
 │       ├── models.py           # Pydantic schemas
-│       ├── kb/                 # Grounding Knowledge Bases (Rental & Salary)
-│       └── services/           # Triage, Extractor, Voice (Saaras/Bulbul), & PDF generator
-├── frontend/
-│   └── app.py                  # Standalone UI module
+│       ├── kb/                 # 4 Civil Domains & BCI LL.B. Doctrinal Reasoning
+│       └── services/           # Extractor, AST Math, IndianKanoon Precedent Agent, Voice & PDF
 ├── test_cases/
-│   └── test_cases.json         # 8 messy conversational test cases
-├── raw_outputs/                # Unedited evaluation transcripts & generated notices
-├── SOLUTION_DOC.md             # The 2-page submission solution writeup
-├── SOLUTION_DOC.pdf            # Exact 2-page compiled submission PDF
+│   └── test_cases.json         # 11 comprehensive conversational test scenarios
+├── raw_outputs/                # Unedited evaluation JSON traces & drafted notices
+├── SOLUTION_DOC.md             # Solution document markdown
+├── SOLUTION_DOC.pdf            # Compiled 2-page submission PDF with architecture diagram
+├── DEMO_VIDEO_SCRIPT.pdf       # Roman-Hindi script used for video presentation
 └── requirements.txt            # Minimal production dependencies
 ```
 
 ---
 
-*Authored by **Advait Pathak** for the Kuku FM AI Generalist Take-Home Evaluation.*
+*Authored by **Advait Pathak** (IIT BHU) for the Kuku FM AI Generalist Take-Home Assignment.*
